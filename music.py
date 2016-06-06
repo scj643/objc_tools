@@ -9,7 +9,8 @@ MPMusicPlayerClientState = ObjCClass('MPMusicPlayerClientState')
 #MPMediaPropertyPredicate = ObjCClass('MPMediaPropertyPredicate')
 musicapp = MPMusicPlayerController.systemMusicPlayer()
 
-class song (object):
+
+class Song (object):
     def __init__(self, song):
         try:
             song.title()
@@ -56,21 +57,70 @@ class song (object):
                 return Image.open(i)
         else:
             return None
+
+def repeat_mode():
+    status = musicapp.repeatMode()
+    if status == 0:
+        return 'Default'
+    if status == 1:
+        return 'None'
+    if status == 2:
+        return 'One'
+    if status == 3:
+        return 'All'
         
+
+def set_repeat_mode(mode):
+    if mode == 'Default':
+        musicapp.setRepeatMode_(0)
+    if mode == 'None':
+        musicapp.setRepeatMode_(1)
+    if mode == 'One':
+        musicapp.setRepeatMode_(2)
+    if mode == 'All':
+        musicapp.setRepeatMode_(3)
         
-def nowplaying():
-    np=musicapp.nowPlayingItem()
-    if np:
-        return song(np)
+def shuffle_mode():
+    status = musicapp.shuffleMode()
+    if status == 0:
+        return 'Default'
+    if status == 1:
+        return 'Off'
+    if status == 2:
+        return 'Songs'
+    if status == 3:
+        return 'Albums'
+        
+def set_shuffle_mode(mode):
+    if mode == 'Default':
+        musicapp.setShuffleMode_(0)
+    if mode == 'Off':
+        musicapp.setShuffleMode_(1)
+    if mode == 'Songs':
+        musicapp.setShuffleMode_(2)
+    if mode == 'Albums':
+        musicapp.setShuffleMode_(3)
 
 def playback_status():
     status = musicapp.playbackState()
     if status == 0:
-        return 'Not Running'
+        return 'Stopped'
     if status == 1:
         return 'Playing'
     if status == 2:
         return 'Paused'
+    if status == 3:
+        return 'Interrupted'
+    if status == 4:
+        return 'SeekingForward'
+    if status == 5:
+        return 'SeekingBackward'
+        
+
+def nowplaying():
+    np=musicapp.nowPlayingItem()
+    if np:
+        return Song(np)
 
 def play():
     musicapp.play()
@@ -94,8 +144,8 @@ def get_volume():
     return musicapp.volume()
     
 def ptoggle():
-    status = musicapp.playbackState()
-    if status == 1:
+    status = playback_status()
+    if status == 'Playing':
         musicapp.pause()
     else:
         musicapp.play()
@@ -103,29 +153,28 @@ def ptoggle():
 def stop():
     musicapp.stop()
 
-def skip():
-    musicapp.setCurrentPlaybackTime_(99999)
+
+def next():
+    musicapp.skipInDirection_error_(1, None)
+
+
+def replay():
+    musicapp.setCurrentPlaybackTime_(0)
     
+
+def previous():
+    musicapp.skipInDirection_error_(-1, None)
     
+
 def next_song_info():
-    return song(musicapp.nowPlayingItemAtIndex_(musicapp.indexOfNowPlayingItem()+1))
+    return Song(musicapp.nowPlayingItemAtIndex_(musicapp.indexOfNowPlayingItem()+1))
 
 
 def library():
     query = MPMediaQuery.songsQuery()
     mlibrary = []
     for item in query.items():
-        mlibrary += [song(item)]
+        mlibrary += [Song(item)]
     return mlibrary
     
 
-def refresh_libs():
-    MPMediaQuery = ObjCClass('MPMediaQuery')
-    MPMusicPlayerController = ObjCClass('MPMusicPlayerController')
-    MPMusicPlayerClientState = ObjCClass('MPMusicPlayerClientState')
-    #MPMediaPredicate = ObjCClass('MPMediaPredicate')
-    #MPMediaPropertyPredicate = ObjCClass('MPMediaPropertyPredicate')
-    musicapp = MPMusicPlayerController.systemMusicPlayer()
-    appmusicapp = MPMusicPlayerController.applicationMusicPlayer()
-    
-s=nowplaying()
