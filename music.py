@@ -154,7 +154,7 @@ def stop():
     musicapp.stop()
 
 
-def next():
+def skip_next():
     musicapp.skipInDirection_error_(1, None)
 
 
@@ -162,7 +162,7 @@ def replay():
     musicapp.setCurrentPlaybackTime_(0)
     
 
-def previous():
+def skip_previous():
     musicapp.skipInDirection_error_(-1, None)
     
 
