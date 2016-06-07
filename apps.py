@@ -76,10 +76,6 @@ def allApps():
     return returns
 
 
-def refreshWorkspace():
-    workspace = LSApplicationWorkspace.defaultWorkspace()
-
-
 def enumOpensIn():
     returns = []
     schemes = []
@@ -90,3 +86,19 @@ def enumOpensIn():
         returns += [{'scheme': i,'app': App(app)}]
     return returns
 
+def backgroundApps():
+    returns = []
+    for i in workspace.applicationsWithUIBackgroundModes():
+        returns += [App(i)]
+    return returns
+    
+def audioComponentApps():
+    returns = []
+    for i in workspace.applicationsWithAudioComponents():
+        returns += [App(i)]
+    return returns
+    
+
+def overideChecker(url):
+    url=_urlHandle(url)
+    return workspace.URLOverrideForURL_(url)
