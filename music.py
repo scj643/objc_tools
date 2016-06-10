@@ -1,14 +1,25 @@
-from objc_util import ObjCClass, NSBundle, uiimage_to_png
+from objc_util import ObjCClass, NSBundle, uiimage_to_png, nsurl, ObjCInstance
 from io import BytesIO
 from PIL import Image
+from urllib.parse import urlparse
 NSBundle.bundleWithPath_('/System/Library/Frameworks/MediaPlayer.framework').load()
 MPMediaQuery = ObjCClass('MPMediaQuery')
 MPMusicPlayerController = ObjCClass('MPMusicPlayerController')
-MPMusicPlayerClientState = ObjCClass('MPMusicPlayerClientState')
+file_handler = ObjCClass('AVAudioFile').alloc()
 #MPMediaPredicate = ObjCClass('MPMediaPredicate')
 #MPMediaPropertyPredicate = ObjCClass('MPMediaPropertyPredicate')
 musicapp = MPMusicPlayerController.systemMusicPlayer()
 
+class FileDesc (object):
+    def __init__(self, url):
+        if type(url) == str:
+            url = nsurl(url)
+        if type(url) == ObjCInstance:
+            sf = file_handler.initForReading_error_(url, None)
+            fformat = sf.fileFormat()
+            self.sampleRate = fformat.sampleRate()
+            self.channels = fformat.channelCount()
+            self.format = urlparse(str(url)).path.split('.')[-1]
 
 class Song (object):
     def __init__(self, song):
@@ -41,7 +52,9 @@ class Song (object):
             self.bpm = song.beatsPerMinute()
         else:
             self.bpm = None
+        self.assetURL = song.assetURL()
         self.song = song
+
     def __str__(self):
         return '{0} - {1} - ({2})'.format(self.title, self.artist, self.album)
         
@@ -57,6 +70,14 @@ class Song (object):
                 return Image.open(i)
         else:
             return None
+    
+    def file_info(self):
+        self.file=FileDesc(self.assetURL)
+    
+    def save(self, location):
+        sf = file_handler.initForReading_error_(self.assetURL, None)
+        
+        
 
 def repeat_mode():
     status = musicapp.repeatMode()

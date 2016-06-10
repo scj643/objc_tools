@@ -95,6 +95,13 @@ def URLOpensIn(url):
     return None
     
 
+def openWithBundleID(bid):
+    if type(bid) == str():
+        return workspace.openApplicationWithBundleID_(bid)
+    else:
+        return False
+        
+
 def allApps():
     apps = workspace.allInstalledApplications()
     returns = []
@@ -113,11 +120,13 @@ def enumOpensIn():
         returns += [{'scheme': i,'app': App(app)}]
     return returns
 
+
 def backgroundApps():
     returns = []
     for i in workspace.applicationsWithUIBackgroundModes():
         returns += [App(i)]
     return returns
+    
     
 def audioComponentApps():
     returns = []
