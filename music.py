@@ -2,12 +2,15 @@ from objc_util import ObjCClass, NSBundle, uiimage_to_png, nsurl, ObjCInstance
 from io import BytesIO
 from PIL import Image
 from urllib.parse import urlparse
-NSBundle.bundleWithPath_('/System/Library/Frameworks/MediaPlayer.framework').load()
+media_player_bundle = NSBundle.bundleWithPath_('/System/Library/Frameworks'
+                                               '/MediaPlayer.framework')
+media_player_bundle.load()
+del media_player_bundle
 MPMediaQuery = ObjCClass('MPMediaQuery')
 MPMusicPlayerController = ObjCClass('MPMusicPlayerController')
 file_handler = ObjCClass('AVAudioFile').alloc()
-#MPMediaPredicate = ObjCClass('MPMediaPredicate')
-#MPMediaPropertyPredicate = ObjCClass('MPMediaPropertyPredicate')
+# MPMediaPredicate = ObjCClass('MPMediaPredicate')
+# MPMediaPropertyPredicate = ObjCClass('MPMediaPropertyPredicate')
 musicapp = MPMusicPlayerController.systemMusicPlayer()
 
 
@@ -22,6 +25,7 @@ class FileDesc (object):
             self.channels = fformat.channelCount()
             self.format = urlparse(str(url)).path.split('.')[-1]
 
+
 class Song (object):
     def __init__(self, song):
         try:
@@ -29,7 +33,7 @@ class Song (object):
         except AttributeError:
             raise TypeError('Not a song item')
         self.title = str(song.title())
-        self.genre = str(song.genre()).replace('\n','')
+        self.genre = str(song.genre()).replace('\n', '')
         self.composer = str(song.composer())
         self.artist = str(song.artist())
         self.albumArtist = str(song.albumArtist())
@@ -64,20 +68,18 @@ class Song (object):
         
     def artwork(self, brep=False):
         if self.song.artworkCatalog():
+            uiimage = self.song.artworkCatalog().bestImageFromDisk()
             if brep:
-                return uiimage_to_png(self.song.artworkCatalog().bestImageFromDisk())
+                return uiimage_to_png(uiimage)
             else:
-                i=BytesIO(uiimage_to_png(self.song.artworkCatalog().bestImageFromDisk()))
+                i = BytesIO(uiimage_to_png(uiimage))
                 return Image.open(i)
         else:
             return None
     
     def file_info(self):
-        self.file=FileDesc(self.assetURL)
+        self.file = FileDesc(self.assetURL)
     
-    
-        
-        
 
 def repeat_mode():
     status = musicapp.repeatMode()
@@ -100,7 +102,8 @@ def set_repeat_mode(mode):
         musicapp.setRepeatMode_(2)
     if mode == 'All':
         musicapp.setRepeatMode_(3)
-        
+
+                
 def shuffle_mode():
     status = musicapp.shuffleMode()
     if status == 0:
@@ -111,7 +114,8 @@ def shuffle_mode():
         return 'Songs'
     if status == 3:
         return 'Albums'
-        
+
+                
 def set_shuffle_mode(mode):
     if mode == 'Default':
         musicapp.setShuffleMode_(0)
@@ -121,6 +125,7 @@ def set_shuffle_mode(mode):
         musicapp.setShuffleMode_(2)
     if mode == 'Albums':
         musicapp.setShuffleMode_(3)
+
 
 def playback_status():
     status = musicapp.playbackState()
@@ -139,15 +144,18 @@ def playback_status():
         
 
 def nowplaying():
-    np=musicapp.nowPlayingItem()
+    np = musicapp.nowPlayingItem()
     if np:
         return Song(np)
+
 
 def play():
     musicapp.play()
 
+
 def pause():
     musicapp.pause()
+
 
 def set_volume(v):
     if type(v) != float:
@@ -156,21 +164,24 @@ def set_volume(v):
         else:
             raise TypeError('Has to be a number')
 
-    if not 0<= v <= 1:
+    if not 0 <= v <= 1:
         raise ValueError('Has to be between 0 or 1')
     
     musicapp.setVolume_(v)
 
+
 def get_volume():
     return musicapp.volume()
-    
+
+
 def ptoggle():
     status = playback_status()
     if status == 'Playing':
         musicapp.pause()
     else:
         musicapp.play()
-    
+
+        
 def stop():
     musicapp.stop()
 
@@ -188,7 +199,8 @@ def skip_previous():
     
 
 def next_song_info():
-    return Song(musicapp.nowPlayingItemAtIndex_(musicapp.indexOfNowPlayingItem()+1))
+    cur_index = musicapp.indexOfNowPlayingItem()
+    return Song(musicapp.nowPlayingItemAtIndex_(cur_index+1))
 
 
 def library():
