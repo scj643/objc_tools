@@ -10,6 +10,7 @@ file_handler = ObjCClass('AVAudioFile').alloc()
 #MPMediaPropertyPredicate = ObjCClass('MPMediaPropertyPredicate')
 musicapp = MPMusicPlayerController.systemMusicPlayer()
 
+
 class FileDesc (object):
     def __init__(self, url):
         if type(url) == str:
@@ -74,8 +75,7 @@ class Song (object):
     def file_info(self):
         self.file=FileDesc(self.assetURL)
     
-    def save(self, location):
-        sf = file_handler.initForReading_error_(self.assetURL, None)
+    
         
         
 
