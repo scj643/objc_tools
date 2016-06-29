@@ -55,7 +55,7 @@ class App (object):
         return self.appID
 
     def __repr__(self):
-        return self.appID
+        return '<'+self.appID+'>'
 
 
 def _objcDict(objcd):
