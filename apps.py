@@ -149,13 +149,3 @@ def getVendors(applist=allApps()):
 
 
 
-'''def search(app_list=allApps(), beta=None, redownload=None, app_type=None, fileSharing=None,
-           settingsBundle=None, vendor=None):
-    matches = []
-    for i in app_list:
-        if beta != None:
-            if i.beta == beta:
-'''
-
-
-
