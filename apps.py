@@ -97,7 +97,8 @@ def URLOpensIn(url):
 
 def openWithBundleID(bid):
     if type(bid) == str():
-        return workspace.openApplicationWithBundleID_(bid)
+        workspace.openApplicationWithBundleID_(bid)
+        return True
     else:
         return False
         
