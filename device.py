@@ -21,7 +21,7 @@ def osVersion():
 
 
 def osVersionString():
-    return str(process.activeProcessorCount())
+    return str(process.operatingSystemVersionString()
 
 
 def deviceName():
@@ -32,8 +32,8 @@ def deviceType():
     return str(device.model())
 
 
-def deviceGeneration():
-    return str(device._currentProduct())
+#def deviceGeneration():
+#    return str(device._currentProduct())
 
     
 def activeProcessors():
@@ -70,6 +70,23 @@ def systemUptime():
     Returns system uptime in seconds
     '''
     return process.systemUptime()
-
+    
+    
+def enviornment():
+    p = process.environment()
+    keys = []
+    values = []
+    returns = {}
+    for i in p.allKeys():
+        keys += [str(i)]
+    for i in p.allValues():
+        values += [str(i)]
+    for i in zip(keys, values):
+        returns[i[0]] = i[1]
+    return returns
+    
+    
+def pid():
+    return process.processIdentifier()
 
 

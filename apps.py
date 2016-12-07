@@ -96,7 +96,7 @@ def URLOpensIn(url):
     
 
 def openWithBundleID(bid):
-    if type(bid) == str():
+    if type(bid) == str:
         workspace.openApplicationWithBundleID_(bid)
         return True
     else:
@@ -111,7 +111,7 @@ def allApps():
     return returns
 
 
-def enumOpensIn():
+def enumUrlSchemes():
     returns = []
     schemes = []
     for i in workspace.publicURLSchemes():
