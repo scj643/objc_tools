@@ -51,6 +51,17 @@ class App (object):
         self.adHoc = self.app.isAdHocCodeSigned()
         self.sdkVersion = str(self.app.sdkVersion())
 
+    def enumURLSchemes(self):
+        schemes = []
+        returns = []
+        for i in workspace.publicURLSchemes():
+            schemes += [str(i)]
+        for i in schemes:
+            app = workspace.applicationForOpeningResource_(_urlHandle(i+'://'))
+            if str(app.applicationIdentifier()) == self.appID:
+                returns += [i]
+            self.schemes = returns
+        
     def __str__(self):
         return self.appID
 
@@ -149,4 +160,10 @@ def getVendors(applist=allApps()):
     return vendors
 
 
-
+def getPythonista():
+    returns = []
+    for i in allApps():
+        if 'Pythonista' in i.appID:
+            returns += [i]
+    
+    return returns
