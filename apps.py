@@ -1,8 +1,11 @@
-from objc_util import ObjCClass, nsurl, ObjCInstance
+from objc_util import ObjCClass, nsurl, ObjCInstance, UIImage, uiimage_to_png
 from datetime import datetime
+from io import BytesIO
+from PIL import Image
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
+
 
 _timediff = 978307200
 
@@ -50,7 +53,11 @@ class App (object):
         self.signerID = str(self.app.signerIdentity())
         self.adHoc = self.app.isAdHocCodeSigned()
         self.sdkVersion = str(self.app.sdkVersion())
-
+        self.infoPlist = None
+        self.staticDisk = None
+        self.dynamicDisk = None
+        self.icon = None
+        
     def enumURLSchemes(self):
         schemes = []
         returns = []
@@ -61,6 +68,26 @@ class App (object):
             if str(app.applicationIdentifier()) == self.appID:
                 returns += [i]
             self.schemes = returns
+            
+    def getDiskUsage(self):
+        """Set's the static and dynamic disk usage variables"""
+        # Static might be the app install size
+        self.staticDisk = self.app.staticDiskUsage().integerValue()
+        # Dynamic might be the storage usage
+        self.dynamicDisk = self.app.dynamicDiskUsage().integerValue()
+        
+    def getInfoPlist(self):
+        """Set's the info.plist for an app"""
+        self.infoPlist = self.app._infoDictionary().propertyList()
+        
+    def getIcon(self, scale=2.0, form=10):
+        i=UIImage._applicationIconImageForBundleIdentifier_format_scale_(self.appID, form, scale)
+        o=ObjCInstance(i.akCGImage())
+        t=UIImage.imageWithCGImage_(o)
+        d=uiimage_to_png(t)
+        buffer = BytesIO(d)
+        self.icon = Image.open(buffer)
+        
         
     def __str__(self):
         return self.appID
