@@ -1,9 +1,7 @@
-from objc_util import *
+from objc_util import ObjCClass
 from objc_tools.pythonista_tool import backgroundTimeRemaining
 UIScreen = ObjCClass('UIScreen')
-UIWindow = ObjCClass('UIWindow')
-UIView = ObjCClass('UIView')
-UIImage = ObjCClass('UIImage')
+
 
 def processCGSize(size):
     return (size.width, size.height)
@@ -128,5 +126,3 @@ def getScreens():
     return returns
     
 
-if __name__ == '__main__':
-    pass
