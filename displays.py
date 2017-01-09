@@ -3,6 +3,7 @@ from objc_tools.pythonista_tool import backgroundTimeRemaining
 UIScreen = ObjCClass('UIScreen')
 UIWindow = ObjCClass('UIWindow')
 UIView = ObjCClass('UIView')
+UIImage = ObjCClass('UIImage')
 
 def processCGSize(size):
     return (size.width, size.height)
@@ -12,21 +13,39 @@ class Display (object):
     def __init__(self, display):
         self.objc = display
         self.allowsVirtualModes = display.allowsVirtualModes()
-        self.name = display.name()
-        self.deviceName = display.deviceName()
+        self.name = str(display.name())
+        self.deviceName = str(display.deviceName())
         self.supportsExtendedColors = display.supportsExtendedColors()
         self.isCloned = display.isCloned()
         self.isCloningSupported = display.isCloningSupported()
         self.isExternal = display.isExternal()
         self.isOverscanned = display.isOverscanned()
-
-
+        
+    def __repr__(self):
+        return '<Display: Name = {name}; DeviceName = {dname}; External = {ext}; extendedColors = {extc}>'.format(name = self.name, dname=self.deviceName, ext=self.isExternal, extc=self.supportsExtendedColors)
+        
+        
 class DisplayMode (object):
     def __init__(self, displayMode):
         self.colorMode = str(displayMode.colorMode())
         self.isVirtual = displayMode.isVirtual()
         self.refreshRate = displayMode.refreshRate()
         self.objc = displayMode
+        self.width = displayMode.width()
+        self.height = displayMode.height()
+        
+    def getDisplay(self):
+        '''Get's the display attached to this mode'''
+        try:
+            returns = Display(self.objc._display())
+        except:
+            returns = None
+            raise NotImplementedError('Private api _diplayMode not avalible')
+        return returns
+        
+        
+    def __repr__(self):
+        return "<DisplayMode: Size = {w} x {h}; RefreshRate = {rf}>".format(w=self.width, h=self.height,rf=self.refreshRate)
         
         
 class UIScreenMode (object):
@@ -35,19 +54,25 @@ class UIScreenMode (object):
         self.pixelAspectRatio = mode.pixelAspectRatio()
         self.size = processCGSize(mode.size())
         if initDisplayInfo:
-            self.initDisplayMode()
+            self.initCurrentDisplayMode()
         else:
             self.displayMode = None
         
-    def initDisplayMode(self):
+    def initCurrentDisplayMode(self):
         try:
             self.displayMode = DisplayMode(self.objc._displayMode())
         except:
             self.displayMode = None
             raise NotImplementedError('Private api _diplayMode not avalible')
+            
+    def __repr__(self):
+        return '<UIDisplayMode: size = {}; pixelAspectRatio = {}>'.format(self.size, self.pixelAspectRatio)
         
 
 class Screen (object):
+    '''A UIScreen wraper
+    
+    '''
     def __init__(self, screen):
         self.objc = screen
         self.bitDepth = screen.bitsPerComponent()
@@ -61,11 +86,7 @@ class Screen (object):
         except:
             self.ScreenName = None
             raise NotImplementedError('Private api _name not avalible')
-        try:
-            self.orientation = screen._interfaceOrientation()
-        except:
-            self.orientation = None
-            raise NotImplementedError('Private api _interfaceOrientation not avalible')
+        self.getOrientation()
     
     
     def getBrightness(self):
@@ -87,6 +108,15 @@ class Screen (object):
         Can be added as a subview
         '''
         return self.objc.snapshot()
+        
+    def getOrientation(self):
+        '''Sets the orientation variable of the class
+        '''
+        try:
+            self.orientation = self.objc._interfaceOrientation()
+        except:
+            self.orientation = None
+            raise NotImplementedError('Private api _interfaceOrientation not avalible')
 
     def __repr__(self):
         return str(self.objc.description()).replace('UIScreen', 'Screen')
@@ -99,4 +129,4 @@ def getScreens():
     
 
 if __name__ == '__main__':
-    s = getScreens()[1]
+    pass
