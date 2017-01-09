@@ -1,5 +1,4 @@
 from objc_util import ObjCClass
-from objc_tools.pythonista_tool import backgroundTimeRemaining
 UIScreen = ObjCClass('UIScreen')
 
 
