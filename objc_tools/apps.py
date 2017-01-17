@@ -1,11 +1,11 @@
-from objc_util import ObjCClass, nsurl, ObjCInstance, UIImage, uiimage_to_png
+from objc_util import ObjCClass, nsurl, ObjCInstance, uiimage_to_png, UIImage
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
-
+LSApplicationProxy = ObjCClass('LSApplicationProxy')
 
 _timediff = 978307200
 
@@ -16,30 +16,18 @@ class App (object):
         except AttributeError:
             raise AttributeError('{0} is not an app ObjC Class'.format(app))
         bg = []
-        self.app = app
-        self.beta = self.app.isBetaApp()
-        self.redownload = self.app.isPurchasedReDownload()
-        self.name = str(self.app.localizedName())
-        self.type = str(self.app.bundleType())
-        self.version = str(self.app.bundleVersion())
-        self.fileSharing = self.app.fileSharingEnabled()
-        self.settingsBundle = self.app.hasSettingsBundle()
-        for b in self.app.UIBackgroundModes():
-            bg += [str(b)]
-        self.backgroundModes = bg
-        self.vendor = str(self.app.vendorName())
-        self.appID = str(self.app.applicationIdentifier())
-        if len(self.app.appTags()):
+        self.objc = app
+        if len(self.objc.appTags()):
             for i in app.appTags():
                 if i == 'hidden':
                     self.hidden = True
         else:
             self.hidden = False
-        self.modTime = datetime.fromtimestamp(self.app.bundleModTime()+_timediff)
+        self.modTime = datetime.fromtimestamp(self.objc.bundleModTime()+_timediff)
         dfam = []
         try:
-            for i in self.app.deviceFamily():
-                dfam += [i]
+            for i in self.objc.deviceFamily():
+                dfam += [i.intValue()]
             if 1 in dfam:
                 self.iPhoneUI = True
             else:
@@ -50,14 +38,69 @@ class App (object):
                 self.iPadUI = False
         except:
             pass
-        self.signerID = str(self.app.signerIdentity())
-        self.adHoc = self.app.isAdHocCodeSigned()
-        self.sdkVersion = str(self.app.sdkVersion())
+        
+        
+        
         self.infoPlist = None
         self.staticDisk = None
         self.dynamicDisk = None
         self.icon = None
         
+    @property
+    def isBeta(self):
+        return self.objc.isBetaApp()
+        
+    @property
+    def isRedownload(self):
+        return self.objc.isPurchasedReDownload()
+        
+    @property
+    def name(self):
+        return str(self.objc.localizedName())
+        
+    @property
+    def type(self):
+        return str(self.objc.bundleType())
+        
+    @property
+    def version(self):
+        return str(self.objc.bundleVersion())
+        
+    @property
+    def fileSharing(self):
+        return self.objc.fileSharingEnabled()
+        
+    @property
+    def hasSettingsBundle(self):
+        return self.objc.hasSettingsBundle()
+        
+    @property
+    def backgroundModes(self):
+        bg = []
+        for b in self.objc.UIBackgroundModes():
+            bg += [str(b)]
+        return bg
+        
+    @property
+    def vendor(self):
+        return str(self.objc.vendorName())
+    
+    @property
+    def appID(self):
+        return str(self.objc.applicationIdentifier())
+        
+    @property
+    def signerID(self):
+        return str(self.objc.signerIdentity())
+        
+    @property
+    def adHoc(self):
+        return self.objc.isAdHocCodeSigned()
+        
+    @property
+    def sdkVersion(self):
+        return str(self.objc.sdkVersion())
+    
     def enumURLSchemes(self):
         schemes = []
         returns = []
@@ -72,19 +115,19 @@ class App (object):
     def getDiskUsage(self):
         """Set's the static and dynamic disk usage variables"""
         # Static might be the app install size
-        self.staticDisk = self.app.staticDiskUsage().integerValue()
+        self.staticDisk = self.objc.staticDiskUsage().integerValue()
         # Dynamic might be the storage usage
-        self.dynamicDisk = self.app.dynamicDiskUsage().integerValue()
+        self.dynamicDisk = self.objc.dynamicDiskUsage().integerValue()
         
     def getInfoPlist(self):
         """Set's the info.plist for an app"""
-        self.infoPlist = self.app._infoDictionary().propertyList()
+        self.infoPlist = self.objc._infoDictionary().propertyList()
         
     def getIcon(self, scale=2.0, form=10):
         i=UIImage._applicationIconImageForBundleIdentifier_format_scale_(self.appID, form, scale)
         o=ObjCInstance(i.akCGImage())
-        t=UIImage.imageWithCGImage_(o)
-        d=uiimage_to_png(t)
+        img=UIImage.imageWithCGImage_(o)
+        d=uiimage_to_png(img)
         buffer = BytesIO(d)
         self.icon = Image.open(buffer)
         
@@ -161,6 +204,7 @@ def enumUrlSchemes():
 
 
 def backgroundApps():
+    '''Broken in i 10 Needs Rewrite'''
     returns = []
     for i in workspace.applicationsWithUIBackgroundModes():
         returns += [App(i)]
@@ -168,6 +212,7 @@ def backgroundApps():
     
     
 def audioComponentApps():
+    '''Broken in iOS 10 Needs Rewrite'''
     returns = []
     for i in workspace.applicationsWithAudioComponents():
         returns += [App(i)]
@@ -194,3 +239,10 @@ def getPythonista():
             returns += [i]
     
     return returns
+    
+def getAppByBID(bid):
+    a=LSApplicationProxy.applicationProxyForIdentifier_(bid)
+    if not a.appState().isValid():
+        raise NameError('Not a valid BID')
+    else:
+        return App(a)
