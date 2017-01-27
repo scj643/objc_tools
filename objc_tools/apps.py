@@ -2,6 +2,7 @@ from objc_util import ObjCClass, nsurl, ObjCInstance, uiimage_to_png, UIImage
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
+from objc_tools.objc_json import objc_to_dict
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
@@ -100,7 +101,14 @@ class App (object):
     @property
     def sdkVersion(self):
         return str(self.objc.sdkVersion())
-    
+        
+    @property
+    def entitlements(self):
+        try:
+            return objc_to_dict(self.objc.entitlements())
+        except TypeError:
+            return None
+        
     def enumURLSchemes(self):
         schemes = []
         returns = []
