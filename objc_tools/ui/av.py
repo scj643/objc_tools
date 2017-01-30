@@ -65,8 +65,11 @@ class Player (object):
     @item.setter
     def item(self, setitem):
         if type(setitem) == PlayerItem:
-            self._objc = AVPlayer.playerWithPlayerItem_(setitem._objc)
             self._item = setitem
+            if not self._objc:
+                self._objc = AVPlayer.playerWithPlayerItem_(setitem._objc)
+            else:
+                self._objc.replaceCurrentItemWithPlayerItem_(setitem)
         else:
             raise TypeError
             
