@@ -1,4 +1,4 @@
-from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, type_encodings
+from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, type_encodings, c_void_p
 from objc_tools.objchandler import urlHandle
 from objc_tools.core.media import CMTime
 import ui
@@ -77,6 +77,16 @@ class Player (object):
     def pause(self):
         if self._objc:
             self._objc.pause()
+            
+    @property
+    def currentTime(self):
+        if self._objc:
+            return self._objc.currentTime(restype=CMTime, argtypes=[])
+    
+    @currentTime.setter
+    def currentTime(self, nil):
+        pass
+            
     
     
 class PlayerView (ui.View):
@@ -92,10 +102,20 @@ class PlayerView (ui.View):
      
     @player.setter
     def player(self, player):
+        self._playerItem = player
         if type(player) == Player:
-            self._playerItem = player
-            self._playerViewController = self._playerViewController.setPlayer_(player._objc)
+            self._playerViewController.setPlayer_(player._objc)
+        elif type(player) == type(None):
+            self._playerViewController.setPlayer_(player)
         else:
-            raise TypeError
+            raise TypeError("player is not able to be set")
+            
+            
+    @player.deleter
+    def player(self):
+        self._playerViewController.setPlayer_(None)
+    
+    def will_close(self):
+        self.player.pause()
              
 
