@@ -42,7 +42,7 @@ class CMTime (Structure):
         pass
         
     def __repr__(self):
-        return '<CMTime value: {tvalue}, Scale: {tscale}>'.format(tvalue=self.CMTimeValue, tscale=self.CMTimeScale)
+        return '<CMTime value: {tvalue}, scale: {tscale}, seconds: {sec}>'.format(tvalue=self.CMTimeValue, tscale=self.CMTimeScale, sec=self.seconds)
         
     def __add__(self, other):
         return CMTimeAdd(self, other)
@@ -104,13 +104,24 @@ def CMTimeMake(value, scale = 90000):
     CMTimeMake.restype = CMTime
     return CMTimeMake(value, scale)
 
-CMTimeMakeWithSeconds = c.CMTimeMakeWithSeconds
-CMTimeMakeWithSeconds.argtypes = [c_double, c_int32]
-CMTimeMakeWithSeconds.restype = CMTime
+
+def CMTimeMakeWithSeconds(seconds, scale = 90000):
+    '''Make a CMTime
+    :param seconds: Number of seconds
+    :param scale: the scale of which seconds goes into
+    '''
+    CMTimeMakeWithSeconds = c.CMTimeMakeWithSeconds
+    CMTimeMakeWithSeconds.argtypes = [c_double, c_int32]
+    CMTimeMakeWithSeconds.restype = CMTime
+    return CMTimeMakeWithSeconds(seconds, scale)
 
 CMTimeMultiplyByFloat64 = c.CMTimeMultiplyByFloat64
 CMTimeMultiplyByFloat64.argtypes = [CMTime, c_double]
 CMTimeMultiplyByFloat64.restype = CMTime
+
+CMTimeGetSeconds = c.CMTimeGetSeconds
+CMTimeGetSeconds.argtypes = [CMTime]
+CMTimeGetSeconds.restype = c_double
 
 CMTimeAdd = c.CMTimeAdd
 CMTimeAdd.argtypes = [CMTime, CMTime]
