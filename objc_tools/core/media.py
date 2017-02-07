@@ -23,7 +23,10 @@ class CMTime (Structure):
     @property
     def seconds(self):
         '''Return the object as seconds'''
-        return self.CMTimeValue / self.CMTimeScale
+        try:
+            return self.CMTimeValue / self.CMTimeScale
+        except ZeroDivisionError:
+            return 0
         
     @seconds.setter
     def seconds(self, time):
