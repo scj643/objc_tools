@@ -95,6 +95,7 @@ class CMTime (Structure):
             return True
         else:
             return False
+        
                 
 def CMTimeMake(value, scale = 90000):
     '''Make a CMTime

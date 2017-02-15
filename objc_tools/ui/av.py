@@ -2,11 +2,14 @@ from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, CGRect, CG
 from objc_tools.objchandler import urlHandle
 from objc_tools.core.media import CMTime, CMTimeMakeWithSeconds
 import ui
-
+from enum import Enum
 load_framework('AVFoundation')
 load_framework('AVKit')
 
-PLAYER_STATUS = {0: "AVPLAYERSTATUSUNKNOWN", 1: "AVPLAYERSTATUSREADYTOPLAY", 2: "AVPLAYERSTATUSFAILED"}
+class PlayerStatus (Enum):
+    AVPLAYERSTATUSUNKNOWN = 0
+    AVPLAYERSTATUSREADYTOPLAY = 1
+    AVPLAYERSTATUSFAILED = 2
 
 LAYER_RESIZE_MODES = ["AVLayerVideoGravityResizeAspect", "AVLayerVideoGravityResizeAspectFill", "AVLayerVideoGravityResize"]
 
@@ -39,17 +42,11 @@ class Asset (object):
     def isPlayable(self):
         return self._objc.isPlayable()
 
-    @isPlayable.setter
-    def isPlayable(self, value):
-        pass
 
     @property
     def isReadable(self):
         return self._objc.isReadable()
 
-    @isReadable.setter
-    def isReadable(self, value):
-        pass
 
 
 class PlayerItem (object):
@@ -82,19 +79,13 @@ class PlayerItem (object):
 
     @property
     def status(self):
-        return PLAYER_STATUS[self._objc.status()]
+        return PlayerStatus(self._objc.status())
 
-    @status.setter
-    def status(self, nil):
-        pass
         
     @property
     def asset(self):
         return self._asset
         
-    @asset.setter
-    def asset(self, item):
-        pass
 
 class Player (object):
     '''A player item that is passed to player views
@@ -181,9 +172,6 @@ class PlayerController (object):
     def frameRate(self):
         return self._objc.nominalFrameRate()
     
-    @frameRate.setter
-    def frameRate(self, nil):
-        pass
         
     @property
     def looping(self):
