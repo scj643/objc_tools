@@ -1,8 +1,8 @@
 from ctypes import Structure, c_int32, c_int64, c_uint32, c_double
 from objc_util import c
-from enum import Enum
+from objc_tools.backports.enum_backport import Flag, auto
 
-class CMTimeFlags (Enum):
+class CMTimeFlags (Flag):
     Valid = 1<<0
     HasBeenRounded = 1<<1
     PositiveInfinity = 1<<2
@@ -34,15 +34,8 @@ class CMTime (Structure):
     
     @property
     def flags(self):
-        returns = []
-        for i in CMTimeFlags:
-            if self.CMTimeFlags & i.value:
-                returns += [i]
-        return returns
+        return CMTimeFlags(self.CMTimeFlags)
     
-    @flags.setter
-    def flags(self, nil):
-        pass
         
     def __repr__(self):
         return '<CMTime value: {tvalue}, scale: {tscale}, seconds: {sec}>'.format(tvalue=self.CMTimeValue, tscale=self.CMTimeScale, sec=self.seconds)
