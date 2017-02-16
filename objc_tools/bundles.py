@@ -1,12 +1,12 @@
 from objc_util import NSBundle, ObjCInstance, ObjCClass
 from os import listdir
 from glob import glob
-__doc__ = '''A tool for working with frameworks'''
+__doc__ = '''A tool for working with NSBundle'''
 FRAMEWORK_PATH = '/System/Library/Frameworks/'
 PRIVATE_FRAMEWORK_PATH = '/System/Library/PrivateFrameworks/'
 
 
-class Framework (object):
+class Bundle (object):
     def __init__(self, bundle):
         self.objc = bundle
         
@@ -63,16 +63,16 @@ def getLoadedFrameworks():
     blist = []
     for i in NSBundle.allFrameworks():
         if i.isLoaded():
-            blist += [Framework(i)]
+            blist += [Bundle(i)]
     return blist
     
     
 def getBundleWithID(bid):
-    return Framework(NSBundle.bundleWithIdentifier_(bid))
+    return Bundle(NSBundle.bundleWithIdentifier_(bid))
     
     
 def bundleForObjcClass(objc):
-    return Framework(NSBundle.bundleForClass_(objc))
+    return Bundle(NSBundle.bundleForClass_(objc))
     
 
 def unloadedFrameworks():
@@ -90,15 +90,15 @@ def listPrivateFrameworks():
     returns = []
     for i in listdir(PRIVATE_FRAMEWORK_PATH):
         returns += [getBundleWithPath(PRIVATE_FRAMEWORK_PATH+i)]
-    return returns
+    return returns    
     
 
-def getFrameworkWithPath(path):
-    return Framework(NSBundle.bundleWithPath_(path))
+def getBundleWithPath(path):
+    return Bundle(NSBundle.bundleWithPath_(path))
     
     
-def getFrameworksAtPath(path, recursive = True, kind = 'framework'):
-    '''Get all frameworks at a path
+def getBundlesAtPath(path, recursive = True, kind = 'framework'):
+    '''Get all bundles at a path
     path: the path you want to search
     recursive: go into subdirectories
     kind: used to determine what the extension to search for is.
@@ -109,7 +109,15 @@ def getFrameworksAtPath(path, recursive = True, kind = 'framework'):
     return returns
     
 
-def frameworkForClass(cls):
+def bundleForClass(cls):
     if type(cls) == str:
-        cls = ObjCClass(cls)
-    return Framework(NSBundle.bundleForClass_(cls))
+        try:
+            cls = ObjCClass(cls)
+        except:
+            return None
+        
+    try:
+        b=NSBundle.bundleForClass_(cls)
+        return Bundle(b)
+    except ValueError:
+        return None
