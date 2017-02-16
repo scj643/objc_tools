@@ -1,6 +1,6 @@
-from objc_util import ObjCClass
+from objc_util import ObjCClass, NSBundle
 
-__all__ = ['batter','backlight_level','set_backlight_level']
+#__all__ = ['battery','backlight_level','set_backlight_level']
 UIDevice = ObjCClass('UIDevice')
 device = UIDevice.currentDevice()
 battery_states = {1: 'unplugged', 2: 'charging', 3: 'full'}

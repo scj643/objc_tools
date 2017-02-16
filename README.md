@@ -1,4 +1,4 @@
-# objc_tools
-ObjC tools for Pythonista
+#ObjC tools for Pythonista
 
-Put objc_tools in your site packages folder.
+##Installation
+Put objc_tools in your site-packages folder.

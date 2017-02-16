@@ -21,7 +21,7 @@ def osVersion():
 
 
 def osVersionString():
-    return str(process.operatingSystemVersionString()
+    return str(process.operatingSystemVersionString())
 
 
 def deviceName():
@@ -90,3 +90,16 @@ def pid():
     return process.processIdentifier()
 
 
+def supportsForceTouch():
+    '''Checks if force touch is supported
+    Private API may break
+    '''
+    return device._supportsForceTouch()
+    
+
+def supportsDeepColor():
+    '''Checks if deep color is supported
+    This is currently only on the iPad Pro 9.7 inch
+    Private API may break
+    '''
+    return device._supportsDeepColor()
