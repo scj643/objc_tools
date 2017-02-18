@@ -139,7 +139,7 @@ def _urlHandle(url):
 
 
 def installed(bid):
-    if isinstance(bid, str):
+    if not isinstance(bid, str):
         raise TypeError
     return workspace.applicationIsInstalled_(bid)
 
