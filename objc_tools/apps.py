@@ -2,7 +2,7 @@ from objc_util import ObjCClass, nsurl, ObjCInstance, uiimage_to_png, UIImage
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
-from objc_tools.objc_json import objc_to_dict
+from objc_tools.objc_json import objc_to_py
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
@@ -92,7 +92,7 @@ class App (object):
     @property
     def entitlements(self):
         try:
-            return objc_to_dict(self.objc.entitlements())
+            return objc_to_py(self.objc.entitlements())
         except TypeError:
             return None
         

@@ -1,7 +1,7 @@
 from objc_util import ObjCInstance, c
 from ctypes import c_char_p, c_long, c_int, c_void_p, c_int32, c_int64, byref, c_uint
 from datetime import datetime
-from objc_tools.objc_json import objc_to_dict
+from objc_tools.objc_json import objc_to_py
 __all__ = ['Battery']
 
 IOServiceMatching = c.IOServiceMatching
@@ -64,7 +64,7 @@ class Battery (object):
         return self
         
     def get_dict(self):
-        i = objc_to_dict(self.objc())
+        i = objc_to_py(self.objc())
         i['timestamp'] = self.timestamp
         return i
         

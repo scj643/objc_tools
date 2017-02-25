@@ -15,7 +15,7 @@ def objc_to_str(objc, pretty=True):
         return None
     
 
-def objc_to_dict(objc):
+def objc_to_py(objc):
     if checkObject(objc):
         return json.loads(objc_to_str(objc))
     else:
