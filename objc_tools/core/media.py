@@ -1,6 +1,6 @@
 from ctypes import Structure, c_int32, c_int64, c_uint32, c_double
 from objc_util import c
-from objc_tools.backports.enum_backport import Flag, auto
+from objc_tools.backports.enum_backport import Flag
 
 class CMTimeFlags (Flag):
     Valid = 1<<0
