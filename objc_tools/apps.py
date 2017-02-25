@@ -10,16 +10,20 @@ LSApplicationProxy = ObjCClass('LSApplicationProxy')
 
 _timediff = 978307200
 
-
 class App (object):
     def __init__(self, app):
         try:
             app.applicationIdentifier()
         except AttributeError:
             raise AttributeError('{0} is not an app ObjC Class'.format(app))
-
+        bg = []
         self.objc = app
-        self.hidden = any(tag == 'hidden' for tag in app.appTags())
+        if len(self.objc.appTags()):
+            for i in app.appTags():
+                if i == 'hidden':
+                    self.hidden = True
+        else:
+            self.hidden = False
         self.modTime = datetime.fromtimestamp(self.objc.bundleModTime()+_timediff)
         try:
             dfam = [i.intValue() for i in self.objc.deviceFamily()]
@@ -31,35 +35,35 @@ class App (object):
         self.staticDisk = None
         self.dynamicDisk = None
         self.icon = None
-
+        
     @property
     def isBeta(self):
         return self.objc.isBetaApp()
-
+        
     @property
     def isRedownload(self):
         return self.objc.isPurchasedReDownload()
-
+        
     @property
     def name(self):
-        return str(self.objc.localizedName())
-
+        return str(alocalizedName())
+        
     @property
     def type(self):
         return str(self.objc.bundleType())
-
+        
     @property
     def version(self):
         return str(self.objc.bundleVersion())
-
+        
     @property
     def fileSharing(self):
         return self.objc.fileSharingEnabled()
-
+        
     @property
     def hasSettingsBundle(self):
         return self.objc.hasSettingsBundle()
-
+        
     @property
     def backgroundModes(self):
         return [str(mode) for mode in self.objc.UIBackgroundModes()]
@@ -68,30 +72,30 @@ class App (object):
     @property
     def vendor(self):
         return str(self.objc.vendorName())
-
+    
     @property
     def appID(self):
         return str(self.objc.applicationIdentifier())
-
+        
     @property
     def signerID(self):
         return str(self.objc.signerIdentity())
-
+        
     @property
     def adHoc(self):
         return self.objc.isAdHocCodeSigned()
-
+        
     @property
     def sdkVersion(self):
         return str(self.objc.sdkVersion())
-
+        
     @property
     def entitlements(self):
         try:
             return objc_to_dict(self.objc.entitlements())
         except TypeError:
             return None
-
+        
     def enumURLSchemes(self):
         returns = []
         for i in [str(i) for i in workspace.publicURLSchemes()]:
@@ -99,19 +103,20 @@ class App (object):
             if str(app.applicationIdentifier()) == self.appID:
                 returns += [i]
             self.schemes = returns
-
+            
     def getDiskUsage(self):
         """Set's the static and dynamic disk usage variables"""
         # Static might be the app install size
         self.staticDisk = self.objc.staticDiskUsage().integerValue()
         # Dynamic might be the storage usage
         self.dynamicDisk = self.objc.dynamicDiskUsage().integerValue()
-
+        
     def getInfoPlist(self):
         """Set's the info.plist for an app"""
         self.infoPlist = self.objc._infoDictionary().propertyList()
-
+        
     def getIcon(self, scale=2.0, form=10):
+
         i = UIImage._applicationIconImageForBundleIdentifier_format_scale_(self.appID, form, scale)
         o = ObjCInstance(i.akCGImage())
         img = UIImage.imageWithCGImage_(o)
@@ -155,7 +160,7 @@ def canOpenURL(url):
 def URLOpensIn(url):
     opener = workspace.applicationForOpeningResource_(_urlHandle(url))
     return App(opener) if opener else None
-
+  
 
 def openWithBundleID(bid):
     if isinstance(bid, str):
@@ -163,7 +168,7 @@ def openWithBundleID(bid):
         return True
     else:
         return False
-
+        
 
 def allApps():
     return [App(app) for app in workspace.allInstalledApplications()]
@@ -173,7 +178,7 @@ def enumUrlSchemes():
     returns = []
     for i in [str(i) for i in workspace.publicURLSchemes()]:
         app = workspace.applicationForOpeningResource_(_urlHandle(i+'://'))
-        returns += [{'scheme': i, 'app': App(app)}]
+        returns += [{'scheme': i,'app': App(app)}]
     return returns
 
 
@@ -200,7 +205,9 @@ def getPythonista():
 
 
 def getAppByBID(bid):
-    a = LSApplicationProxy.applicationProxyForIdentifier_(bid)
-    if a.appState().isValid():
+    a=LSApplicationProxy.applicationProxyForIdentifier_(bid)
+    if not a.appState().isValid():
+        raise NameError('Not a valid BID')
+    else:
         return App(a)
-    raise NameError('Not a valid BID')
+
