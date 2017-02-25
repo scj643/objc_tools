@@ -25,23 +25,12 @@ class App (object):
         else:
             self.hidden = False
         self.modTime = datetime.fromtimestamp(self.objc.bundleModTime()+_timediff)
-        dfam = []
         try:
-            for i in self.objc.deviceFamily():
-                dfam += [i.intValue()]
-            if 1 in dfam:
-                self.iPhoneUI = True
-            else:
-                self.iPhoneUI = False
-            if 2 in dfam:
-                self.iPadUI = True
-            else:
-                self.iPadUI = False
+            dfam = [i.intValue() for i in self.objc.deviceFamily()]
         except:
-            pass
-        
-        
-        
+            dfam = []
+        self.iPhoneUI = 1 in dfam
+        self.iPadUI = 2 in dfam
         self.infoPlist = None
         self.staticDisk = None
         self.dynamicDisk = None
@@ -77,11 +66,9 @@ class App (object):
         
     @property
     def backgroundModes(self):
-        bg = []
-        for b in self.objc.UIBackgroundModes():
-            bg += [str(b)]
-        return bg
-        
+        return [str(mode) for mode in self.objc.UIBackgroundModes()]
+
+
     @property
     def vendor(self):
         return str(self.objc.vendorName())
@@ -110,11 +97,8 @@ class App (object):
             return None
         
     def enumURLSchemes(self):
-        schemes = []
         returns = []
-        for i in workspace.publicURLSchemes():
-            schemes += [str(i)]
-        for i in schemes:
+        for i in [str(i) for i in workspace.publicURLSchemes()]:
             app = workspace.applicationForOpeningResource_(_urlHandle(i+'://'))
             if str(app.applicationIdentifier()) == self.appID:
                 returns += [i]
@@ -132,19 +116,18 @@ class App (object):
         self.infoPlist = self.objc._infoDictionary().propertyList()
         
     def getIcon(self, scale=2.0, form=10):
-        i=UIImage._applicationIconImageForBundleIdentifier_format_scale_(self.appID, form, scale)
-        o=ObjCInstance(i.akCGImage())
-        img=UIImage.imageWithCGImage_(o)
-        d=uiimage_to_png(img)
-        buffer = BytesIO(d)
-        self.icon = Image.open(buffer)
-        
-        
+
+        i = UIImage._applicationIconImageForBundleIdentifier_format_scale_(self.appID, form, scale)
+        o = ObjCInstance(i.akCGImage())
+        img = UIImage.imageWithCGImage_(o)
+        with BytesIO(uiimage_to_png(img)) as buffer:
+            self.icon = Image.open(buffer)
+
     def __str__(self):
         return self.appID
 
     def __repr__(self):
-        return '<'+self.appID+'>'
+        return '<' + self.appID + '>'
 
 
 def _objcDict(objcd):
@@ -155,14 +138,13 @@ def _objcDict(objcd):
 
 
 def _urlHandle(url):
-    if type(url) != ObjCInstance:
+    if not isinstance(url, ObjCInstance):
         return nsurl(url)
-    if url.isKindOfClass_(ObjCClass('NSURL')):
-        return url
+    return url if url.isKindOfClass_(ObjCClass('NSURL')) else None
 
 
 def installed(bid):
-    if type(bid) != str:
+    if not isinstance(bid, str):
         raise TypeError
     return workspace.applicationIsInstalled_(bid)
 
@@ -172,20 +154,16 @@ def openURL(url):
 
 
 def canOpenURL(url):
-    if workspace.applicationForOpeningResource_(_urlHandle(url)):
-        return True
-    return False
+    return bool(workspace.applicationForOpeningResource_(_urlHandle(url)))
 
 
 def URLOpensIn(url):
     opener = workspace.applicationForOpeningResource_(_urlHandle(url))
-    if opener:
-            return App(opener)
-    return None
-    
+    return App(opener) if opener else None
+  
 
 def openWithBundleID(bid):
-    if type(bid) == str:
+    if isinstance(bid, str):
         workspace.openApplicationWithBundleID_(bid)
         return True
     else:
@@ -193,61 +171,39 @@ def openWithBundleID(bid):
         
 
 def allApps():
-    apps = workspace.allInstalledApplications()
-    returns = []
-    for i in apps:
-        returns += [App(i)]
-    return returns
+    return [App(app) for app in workspace.allInstalledApplications()]
 
 
 def enumUrlSchemes():
     returns = []
-    schemes = []
-    for i in workspace.publicURLSchemes():
-        schemes += [str(i)]
-    for i in schemes:
+    for i in [str(i) for i in workspace.publicURLSchemes()]:
         app = workspace.applicationForOpeningResource_(_urlHandle(i+'://'))
         returns += [{'scheme': i,'app': App(app)}]
     return returns
 
 
 def backgroundApps():
-    '''Broken in i 10 Needs Rewrite'''
-    returns = []
-    for i in workspace.applicationsWithUIBackgroundModes():
-        returns += [App(i)]
-    return returns
-    
-    
+    '''Broken in iOs 10 Needs Rewrite'''
+    return [App(app) for app in workspace.applicationsWithUIBackgroundModes()]
+
+
 def audioComponentApps():
     '''Broken in iOS 10 Needs Rewrite'''
-    returns = []
-    for i in workspace.applicationsWithAudioComponents():
-        returns += [App(i)]
-    return returns
-    
+    return [App(app) for app in workspace.applicationsWithAudioComponents()]
+
 
 def overideChecker(url):
-    url=_urlHandle(url)
-    return workspace.URLOverrideForURL_(url)
+    return workspace.URLOverrideForURL_(_urlHandle(url))
 
 
 def getVendors(applist=allApps()):
-    vendors = []
-    for i in applist:
-        if i.vendor not in vendors:
-            vendors += [i.vendor]
-    return vendors
+    return sorted(set(app.vendor for app in applist))
 
 
 def getPythonista():
-    returns = []
-    for i in allApps():
-        if 'Pythonista' in i.appID:
-            returns += [i]
-    
-    return returns
-    
+    return [app for app in allApps() if 'Pythonista' in app.appID]
+
+
 def getAppByBID(bid):
     a=LSApplicationProxy.applicationProxyForIdentifier_(bid)
     if not a.appState().isValid():
