@@ -105,7 +105,7 @@ def getBundlesAtPath(path, recursive = True, kind = 'framework'):
     '''
     returns = []
     for i in glob('{}/**/*.{}/'.format(path, kind), recursive = True):
-        returns += [getFrameworkWithPath(i)]
+        returns += [getBundleWithPath(i)]
     return returns
     
 
