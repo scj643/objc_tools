@@ -1,4 +1,4 @@
-from objc_util import nsurl, ObjCInstance, NSString
+from objc_util import ObjCInstance, nsurl, NSURL, NSString
 
 def objcDict(objcd):
     returns = []
@@ -7,6 +7,7 @@ def objcDict(objcd):
     return returns
 
 
+    
 def urlHandle(url):
     if type(url) != ObjCInstance:
         if type(url) != str:
@@ -29,4 +30,7 @@ def type_convert(item):
         raise TypeError('{} is not an ObjC type'.format(str(item)))
     if item.isKindOfClass(NSString):
         return str(item)
-    if item.isKindOfClass()
+
+    
+
+

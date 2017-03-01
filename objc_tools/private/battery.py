@@ -41,7 +41,7 @@ class Battery (object):
     def update(self):
         '''Update the information in the object'''
         self._objc_ptr=c_void_p(0)
-        IORegistryEntryCreateCFProperties(powerSource, byref(self._objc_ptr), None, 0);\
+        IORegistryEntryCreateCFProperties(powerSource, byref(self._objc_ptr), None, 0)
         self.timestamp = datetime.now()
         self.valid = True
         
