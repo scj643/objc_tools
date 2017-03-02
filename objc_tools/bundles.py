@@ -1,10 +1,21 @@
-from objc_util import NSBundle, ObjCInstance, ObjCClass
+from objc_util import NSBundle, ObjCInstance, ObjCClass, c_void_p
+from objc_tools.foundation.error import Handler
 from os import listdir
 from glob import glob
 __doc__ = '''A tool for working with NSBundle'''
 FRAMEWORK_PATH = '/System/Library/Frameworks/'
 PRIVATE_FRAMEWORK_PATH = '/System/Library/PrivateFrameworks/'
 
+class BundleLoadState (object):
+    def __init__(self, status, error):
+        self.status = status
+        self.error = error
+            
+    def __bool__(self):
+        return self.status
+        
+    def __repr__(self):
+        return '<BundleLoadState: Loaded: {}, Error: {}>'.format(self.status, self.error)
 
 class Bundle (object):
     def __init__(self, bundle):
@@ -43,7 +54,18 @@ class Bundle (object):
         return self.path.rsplit('.',1)[-1]
         
     def load(self):
-        return self.objc.load()
+        '''
+        :result: a BundleLoadState object
+        '''
+        pointer = Handler()
+        result = self.objc.loadAndReturnError_(pointer)
+        error = pointer.error()
+        return BundleLoadState(result, error)
+    
+    def reload_object(self):
+        if self.path:
+            p = self.path
+            self.objc = NSBundle
         
     def unload(self):
         return self.objc.unload()

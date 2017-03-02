@@ -3,6 +3,7 @@ from datetime import datetime
 from io import BytesIO
 from PIL import Image
 from objc_tools.objc_json import objc_to_py
+from objc_tools.backports.enum_backport import Enum
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
@@ -10,6 +11,11 @@ LSApplicationProxy = ObjCClass('LSApplicationProxy')
 
 _timediff = 978307200
 
+class AppType (Enum):
+    '''Used to bridge with the numerical version'''
+    System = 1
+    User = 0
+    
 class App (object):
     def __init__(self, app):
         try:
@@ -46,15 +52,19 @@ class App (object):
         
     @property
     def name(self):
-        return str(alocalizedName())
+        return str(objc.alocalizedName())
         
     @property
     def type(self):
-        return str(self.objc.bundleType())
+        return AppType[str(self.objc.bundleType())]
         
     @property
     def version(self):
         return str(self.objc.bundleVersion())
+        
+    @property
+    def versionString(self):
+        return str(self.objc.shortVersionString())
         
     @property
     def fileSharing(self):
@@ -67,7 +77,6 @@ class App (object):
     @property
     def backgroundModes(self):
         return [str(mode) for mode in self.objc.UIBackgroundModes()]
-
 
     @property
     def vendor(self):
@@ -95,7 +104,39 @@ class App (object):
             return objc_to_py(self.objc.entitlements())
         except TypeError:
             return None
+    
+    @property
+    def bundlePath(self):
+        return str(self.objc.bundleURL()).replace('file://', '')
         
+    @property
+    def teamID(self):
+        return str(self.objc.teamID())
+        
+    @property
+    def source(self):
+        '''The app which the app was gotten from'''
+        if self.objc.sourceAppIdentifier():
+            return getAppByBID(self.objc.sourceAppIdentifier())
+        else:
+            return None
+            
+    @property
+    def variant(self):
+        return str(self.objc.applicationVariant())
+    
+    @property
+    def minimumOsVersion(self):
+        return self.objc.minimumSystemVersion()
+        
+    @property
+    def signerID(self):
+        if self.objc.signerIdentity():
+            return str(self.objc.signerIdentity())
+        else:
+            return None
+    
+    
     def enumURLSchemes(self):
         returns = []
         for i in [str(i) for i in workspace.publicURLSchemes()]:
@@ -211,3 +252,51 @@ def getAppByBID(bid):
     else:
         return App(a)
 
+def getVendorApps(applist = allApps(), vendor = None):
+    '''Apps that have vendor names strings will be returned'''
+    results = {}
+    if vendor:
+        results[vendor] = []
+        for app in applist:
+            if app.vendor == vendor:
+                results[vendor] += [app]
+    else:
+        allVendors = getVendors()
+        for i in allVendors:
+            results[i] = []
+        for app in applist:
+                if app.vendor == None:
+                    results['No Vendor'] += [app]
+                else:
+                    results[app.vendor] += [app]
+                
+    return results
+    
+def getTeamIDs(applist = allApps()):
+    return sorted(set(app.teamID for app in applist))
+    
+def getAppsWithTeamID(teamid, applist = allApps()):
+    results = []
+    for app in applist:
+        if app.teamID == teamid:
+            results += [app]
+    return results
+
+def getAppsOfType(apptype):
+    results = []
+    if isinstance(apptype, AppType):
+        for app in workspace.applicationsOfType_(apptype.value):
+            results += [App(app)]
+    if isinstance(apptype, str):
+        for app in workspace.applicationsOfType_(AppType[apptype].value):
+            results += [App(app)]
+    if isinstance(apptype, int):
+        for app in workspace.applicationsOfType_(AppType(apptype).value):
+            results += [App(app)]
+    return results
+    
+    
+if __name__ == '__main__':
+    a = allApps()
+    p = getPythonista()[0]
+    o = p.objc
