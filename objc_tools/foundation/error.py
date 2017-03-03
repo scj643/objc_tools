@@ -13,6 +13,8 @@ class NSError (object):
         self._objc = objc
         self.descriptions = LocalizedStrings(self._objc)
         self.info = objc_to_py(self._objc.userInfo())
+        self.domain = str(self._objc.domain())
+        self.code = self._objc.code()
         
     def __repr__(self):
         return '<NSError: Description: "{}">'.format(self.descriptions.description)

@@ -2,6 +2,7 @@ from objc_util import NSBundle, ObjCInstance, ObjCClass, c_void_p
 from objc_tools.foundation.error import Handler
 from os import listdir
 from glob import glob
+from objc_tools.objc_json import objc_to_py
 __doc__ = '''A tool for working with NSBundle'''
 FRAMEWORK_PATH = '/System/Library/Frameworks/'
 PRIVATE_FRAMEWORK_PATH = '/System/Library/PrivateFrameworks/'
@@ -28,10 +29,6 @@ class Bundle (object):
     @property
     def versionNumber(self):
         return self.objc.versionNumber()
-        
-    @property
-    def infoDictionary(self):
-        return self.objc.infoDictionary()
         
     @property
     def bundleID(self):
@@ -76,6 +73,17 @@ class Bundle (object):
             return ObjCInstance(self.objc.principalClass())
         else:
             return None
+            
+    @property
+    def info_dict(self):
+        return objc_to_py(self.objc.infoDictionary())
+        
+    @property
+    def can_load(self):
+        pointer = Handler()
+        result = self.objc.preflightAndReturnError_(pointer)
+        error = pointer.error()
+        return BundleLoadState(result, error)
         
     def __repr__(self):
         return '<Framework <{}> (Path {}) Loaded: {}>'.format(self.bundleID, self.path, self.isLoaded)
@@ -143,3 +151,7 @@ def bundleForClass(cls):
         return Bundle(b)
     except ValueError:
         return None
+        
+
+def mainBundle():
+    return Bundle(NSBundle.mainBundle())
