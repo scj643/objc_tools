@@ -1,7 +1,10 @@
 from objc_util import NSBundle, ObjCInstance, ObjCClass, c_void_p
 from objc_tools.foundation.error import Handler
 from os import listdir
-from glob import glob
+try:
+    from glob import glob
+except ImportError:
+    from objc_tools.backports.glob_backport import glob
 from objc_tools.objc_json import objc_to_py
 __doc__ = '''A tool for working with NSBundle'''
 FRAMEWORK_PATH = '/System/Library/Frameworks/'

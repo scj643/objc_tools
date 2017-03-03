@@ -2,7 +2,11 @@ from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, CGRect, CG
 from objc_tools.objchandler import urlHandle
 from objc_tools.core.media import CMTime, CMTimeMakeWithSeconds
 import ui
-from enum import Enum
+try:
+    from enum import Enum
+except ImportError:
+    #make it work on stuff with out enum
+    from objc_tools.backports.enum_backport import Enum
 load_framework('AVFoundation')
 load_framework('AVKit')
 
