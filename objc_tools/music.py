@@ -1,7 +1,12 @@
 from objc_util import ObjCClass, NSBundle, uiimage_to_png, nsurl, ObjCInstance
 from io import BytesIO
 from PIL import Image
-from urllib.parse import urlparse
+urlprase = None
+try:
+    from urllib.prase import urlprase
+except ImportError:
+    import urllib2
+    urlprase = urllib2.urlparse
 from objc_tools.device import osVersion
 media_player_bundle = NSBundle.bundleWithPath_('/System/Library/Frameworks'
                                                '/MediaPlayer.framework')
