@@ -216,15 +216,16 @@ class AllFrameworksDataSource(object):
 
 @ui.in_background
 def reload_data(sender, response = 'Reloaded'):
-    v['fwcontainer']['activity'].start()
-    v['reload'].enabled = False
+    sender.superview['fwcontainer']['activity'].start()
+    sender.enabled = False
     frameworks.fworks = get_frameworks()
     sender.superview['fwcontainer']['classes'].reload()
     ui.in_background(dialogs.hud_alert('Reloaded'))
-    v['reload'].enabled = True
-    v['fwcontainer']['activity'].stop()
+    sender.enabled = True
+    sender.superview['fwcontainer']['activity'].stop()
 
 def run():
+    global frameworks
     v = ui.load_view('objc_browser')
     v.background_color = 'efeff4'
     a=loading()
