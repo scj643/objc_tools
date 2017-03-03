@@ -224,26 +224,30 @@ def reload_data(sender, response = 'Reloaded'):
     v['reload'].enabled = True
     v['fwcontainer']['activity'].stop()
 
-v = ui.load_view('objc_browser')
-v.background_color = 'efeff4'
-a=loading()
-a.name = 'activity'
-v['fwcontainer'].add_subview(a)
-v['fwcontainer']['activity'].center = v['fwcontainer'].center
-v['fwcontainer']['classes'].delegate = FrameworkClassesDelegate()
-v['selected'].delegate = CopyDelegate()
-v.present('panel')
-v['reload'].enabled = False
-frameworks = AllFrameworksDataSource(get_frameworks())
-v['fwcontainer']['classes'].data_source = frameworks
-reload_data(v['reload'], "Loaded")
-
-#v['classes'].reload()
-
-#h = FrameworkClassesDataSource(d['frameworks']['com.apple.UIKit'])
-
-#v['selected'].data_source = h
-#v['selected'].reload()
-
-#run()
-
+def run():
+    v = ui.load_view('objc_browser')
+    v.background_color = 'efeff4'
+    a=loading()
+    a.name = 'activity'
+    v['fwcontainer'].add_subview(a)
+    v['fwcontainer']['activity'].center = v['fwcontainer'].center
+    v['fwcontainer']['classes'].delegate = FrameworkClassesDelegate()
+    v['selected'].delegate = CopyDelegate()
+    v.present('panel')
+    v['reload'].enabled = False
+    frameworks = AllFrameworksDataSource(get_frameworks())
+    v['fwcontainer']['classes'].data_source = frameworks
+    reload_data(v['reload'], "Loaded")
+    
+    #v['classes'].reload()
+    
+    #h = FrameworkClassesDataSource(d['frameworks']['com.apple.UIKit'])
+    
+    #v['selected'].data_source = h
+    #v['selected'].reload()
+    
+    #run()
+    
+    
+if __name__ == '__main__':
+    run()
