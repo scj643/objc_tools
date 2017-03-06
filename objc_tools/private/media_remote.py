@@ -1,10 +1,8 @@
-from objc_util import c_void_p, c_int, c, c_bool, ObjCInstance, NSString, NSDictionary, c_char_p, ObjCClass
-from objc_util import *
+from objc_util import c_void_p, c_int, c, c_bool, ObjCInstance, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong
 from objc_tools.backports.enum_backport import Enum
-from objc_tools import blocks
+from sys import modules
 
 global nowplaying
-nowplaying = None
 
 class Commands (Enum):
     kMRPlay = 0
@@ -22,8 +20,9 @@ class Commands (Enum):
     kMRGoBackFifteenSeconds = 12
     kMRSkipFifteenSeconds = 13
     
-    
-OMMainThreadDispatcher = ObjCClass('OMMainThreadDispatcher_3')
+
+MRMediaRemoteGetNowPlayingInfo = c.MRMediaRemoteGetNowPlayingInfo
+MRMediaRemoteGetNowPlayingInfo.argtypes = [c_void_p, ObjCBlock]
 
 MRMediaRemoteSendCommand = c.MRMediaRemoteSendCommand
 MRMediaRemoteSendCommand.argtypes = [c_int, c_void_p]
@@ -47,25 +46,46 @@ def route_has_volume_control():
     MRMediaRemotePickedRouteHasVolumeControl.restype = c_bool
     return MRMediaRemotePickedRouteHasVolumeControl()
     
+
+class Nowplaying (object):
+    def __init__(self):
+        self.nowplaying = None
     
+    def get(self, block = True):
+        #handler = ObjCBlock(handle, argtypes=[c_void_p, c_void_p])
+        MRMediaRemoteGetNowPlayingInfo(queue, handler)
+        this = modules[__name__]
+        
+        if block:
+            this.nowplaying = None
+            while not this.nowplaying:
+                pass
+            self.nowplaying = this.nowplaying
+            this.nowplaying = None
+        else:
+            self.nowplaying = this.nowplaying
+            this.nowplaying = None
+        
 
-
-queue = q
-MRMediaRemoteGetNowPlayingInfo = c.MRMediaRemoteGetNowPlayingInfo
-MRMediaRemoteGetNowPlayingInfo.argtypes = [c_void_p, ObjCBlock]
-#MRMediaRemoteGetNowPlayingInfo.restype =
-#(queue, handler.ptr)
-#return handler
-
-t=NSThread.mainThread()
 
 def bhandle(_cmd, d):
-    global  nowplaying
-    nowplaying = ObjCInstance(d)
-
+        global  nowplaying
+        nowplaying = ObjCInstance(d)
+        
+        
+queue = dispatch_get_global_queue(0, 0)
+MRMediaRemoteGetNowPlayingInfo = c.MRMediaRemoteGetNowPlayingInfo
+MRMediaRemoteGetNowPlayingInfo.argtypes = [c_void_p, ObjCBlock]
 handler = ObjCBlock(bhandle, argtypes=[c_void_p, c_void_p])
+
+def get():
+    MRMediaRemoteGetNowPlayingInfo(queue, handler)
 
 def set_route(route, pw):
     MRMediaRemoteSetPickedRouteWithPassword = c.MRMediaRemoteSetPickedRouteWithPassword
     MRMediaRemoteSetPickedRouteWithPassword.argtypes=[c_void_p, c_void_p]
     MRMediaRemoteSetPickedRouteWithPassword(ns(route).ptr, ns(pw).ptr)
+    
+n=Nowplaying()
+n.get()
+
