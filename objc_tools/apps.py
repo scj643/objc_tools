@@ -52,7 +52,7 @@ class App (object):
         
     @property
     def name(self):
-        return str(objc.alocalizedName())
+        return str(self.objc.localizedName())
         
     @property
     def type(self):
