@@ -4,7 +4,39 @@ from objc_util import ObjCClass, ObjCInstance, UIColor
 from objc_tools import bundles
 import dialogs
 import clipboard
+import re
 
+def matchcell(item, match_lists):
+    for i in match_lists:
+        res = None
+        p = re.compile(i[0])
+        if type(item) == list:
+            res = any(p.findall(x) for x in item)
+        if type(item) == str:
+            res = any(p.findall(item))
+        if res:
+            return i[1]
+    return 'white'
+
+def class_objects(cla='', alloc=True):
+        functions = []
+        initializers = []
+        try:
+            c = ObjCClass(cla)
+        except ValueError:
+            dialogs.alert(cla + ' is not a known class')
+        try:
+            initializers = dir(c)
+        except:
+            return None
+        if alloc:
+            try:
+                c.alloc()
+                functions = [x for x in dir(c.alloc()) if x not in initializers]
+            except:
+                functions = []
+        return [['Initializers',initializers],['Methods', functions]]
+        
 class loading (ui.View):
     def __init__(self):
         self.activity = ui.ActivityIndicator(name='activity', hides_when_stopped=True, style = ui.ACTIVITY_INDICATOR_STYLE_WHITE_LARGE, touch_enabled = False)
@@ -61,6 +93,7 @@ def get_frameworks():
                 frameworks[bundles.bundleForClass(i).bundleID] = {'bundle': bundles.bundleForClass(i), 'items': [i]}
         else:
             frameworks['No Framework']['items'] += [i]
+    
     flist = sorted(frameworks.keys())
     return {'flist': flist, 'frameworks': frameworks}
     
@@ -84,6 +117,9 @@ class FrameworkClassesDataSource(object):
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
         cell.text_label.text = self.items[row]
+        s = re.compile('default')
+        l = class_objects(self.items[row], False)[0][1]
+        cell.background_color = matchcell(l, [('default', '#95ff9e'),('shared', '#bff7ff') ])
         cell.accessory_type = 'detail_disclosure_button'
         return cell
 
@@ -106,25 +142,16 @@ class CopyDelegate (object):
             v.present('full_screen')
         else:
             v.width=600
-            v.height=200
+            v.height=600
             v.present('popover', popover_location=(0,0))
 
 class ClassBrowserController(object):
     def __init__(self, cla=''):
-        self.class_name = cla
-        self.obs = []
-        try:
-            c = ObjCClass(self.class_name)
-        except ValueError:
-            dialogs.alert(self.class_name + ' is not a known class')
-        try:
-            self.obs.append(['Class',dir(c.alloc())])
-        except:
-            pass
+        self.obs = class_objects(cla)
 
     def tableview_did_select(self, tableview, section, row):
         clipboard.set(self.obs[section][1][row])
-        tableview.close()
+        dialogs.hud_alert('copied')
 
     def tableview_number_of_sections(self, tableview):
         return len(self.obs)
@@ -135,6 +162,7 @@ class ClassBrowserController(object):
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
         cell.text_label.text = self.obs[section][1][row]
+        cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'),('shared', '#bff7ff') ])
         return cell
 
     def tableview_title_for_header(self, tableview, section):
@@ -220,9 +248,10 @@ def reload_data(sender, response = 'Reloaded'):
     sender.enabled = False
     frameworks.fworks = get_frameworks()
     sender.superview['fwcontainer']['classes'].reload()
-    ui.in_background(dialogs.hud_alert('Reloaded'))
-    sender.enabled = True
     sender.superview['fwcontainer']['activity'].stop()
+    dialogs.hud_alert('Reloaded')
+    sender.enabled = True
+    
 
 def run():
     global frameworks
