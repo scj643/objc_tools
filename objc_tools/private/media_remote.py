@@ -1,10 +1,13 @@
-from objc_util import c_void_p, c_int, c, c_bool, ObjCInstance, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong
-from objc_tools.backports.enum_backport import Enum
+from objc_util import c_void_p, c_int, c, c_bool, ObjCInstance, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong, nsdata_to_bytes
+from objc_tools.backports.enum_backport import IntEnum
 from sys import modules
+from time import time
+from plistlib import loads
 
 global nowplaying
+nowplaying = None
 
-class Commands (Enum):
+class Commands (IntEnum):
     kMRPlay = 0
     kMRPause = 1
     kMRTogglePlayPause = 2
@@ -49,24 +52,27 @@ def route_has_volume_control():
 
 class Nowplaying (object):
     def __init__(self):
-        self.nowplaying = None
+        self._nowplaying = None
     
-    def get(self, block = True):
+    def get(self, block = True, timeout=1):
         #handler = ObjCBlock(handle, argtypes=[c_void_p, c_void_p])
         MRMediaRemoteGetNowPlayingInfo(queue, handler)
         this = modules[__name__]
         
         if block:
-            this.nowplaying = None
-            while not this.nowplaying:
-                pass
-            self.nowplaying = this.nowplaying
-            this.nowplaying = None
+            ctime = time()
+            while (self._nowplaying == None or self._nowplaying == this.nowplaying) and (time() - ctime < timeout):
+                self._nowplaying = this.nowplaying
         else:
-            self.nowplaying = this.nowplaying
-            this.nowplaying = None
-        
-
+            self._nowplaying = this.nowplaying
+    
+    @property
+    def nowplaying(self):
+        if self._nowplaying:
+            b = nsdata_to_bytes(self._nowplaying.plistData())
+            return loads(b)
+        else:
+            return None
 
 def bhandle(_cmd, d):
         global  nowplaying
@@ -86,6 +92,8 @@ def set_route(route, pw):
     MRMediaRemoteSetPickedRouteWithPassword.argtypes=[c_void_p, c_void_p]
     MRMediaRemoteSetPickedRouteWithPassword(ns(route).ptr, ns(pw).ptr)
     
-n=Nowplaying()
-n.get()
+    
+if __name__ == '__main__':    
+    n=Nowplaying()
+    n.get(True)
 
