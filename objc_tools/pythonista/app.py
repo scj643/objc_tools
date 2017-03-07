@@ -1,5 +1,5 @@
 from objc_util import ObjCClass
-from objc_tools.backports.enum_backport import Flag, Enum
+from objc_tools.backports.enum_backport import Flag, IntEnum
 UIApplication = ObjCClass('UIApplication')
 
 class UIUserNotificationType (Flag):
@@ -9,7 +9,7 @@ class UIUserNotificationType (Flag):
     UIUserNotificationTypeAlert = 1 << 2 # the application may display an alert upon a notification being received
     
             
-class UIBackgroundRefreshStatus (Enum):
+class UIBackgroundRefreshStatus (IntEnum):
     
     UIBackgroundRefreshStatusRestricted = 0
     
@@ -17,7 +17,7 @@ class UIBackgroundRefreshStatus (Enum):
     
     UIBackgroundRefreshStatusAvailable = 2
   
-class UIApplicationState (Enum):
+class UIApplicationState (IntEnum):
     UIApplicationStateActive = 0
     UIApplicationStateInactive = 1
     UIApplicationStateBackground = 2

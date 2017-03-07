@@ -3,7 +3,7 @@ from datetime import datetime
 from io import BytesIO
 from PIL import Image
 from objc_tools.objc_json import objc_to_py
-from objc_tools.backports.enum_backport import Enum
+from objc_tools.backports.enum_backport import IntEnum
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
@@ -11,7 +11,7 @@ LSApplicationProxy = ObjCClass('LSApplicationProxy')
 
 _timediff = 978307200
 
-class AppType (Enum):
+class AppType (IntEnum):
     '''Used to bridge with the numerical version'''
     System = 1
     User = 0

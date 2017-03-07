@@ -1,5 +1,5 @@
 from objc_util import *
-from objc_tools.backports.enum_backport import Enum
+from objc_tools.backports.enum_backport import IntEnum
 from objc_tools import blocks
 load_framework('UserNotifications')
 
@@ -18,7 +18,7 @@ UNMutableNotificationContent = ObjCClass('UNMutableNotificationContent')
 UNTimeIntervalNotificationTrigger = ObjCClass('UNTimeIntervalNotificationTrigger')
 UNNotificationRequest = ObjCClass('UNNotificationRequest')
 
-class UNAuthorizationStatus(Enum):
+class UNAuthorizationStatus(IntEnum):
     #The user has not yet made a choice regarding whether the application may post user notifications.
     UNAuthorizationStatusNotDetermined = 0
     

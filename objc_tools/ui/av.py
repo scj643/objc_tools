@@ -2,11 +2,11 @@ from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, CGRect, CG
 from objc_tools.objchandler import urlHandle
 from objc_tools.core.media import CMTime, CMTimeMakeWithSeconds
 import ui
-from enum import Enum
+from objc_tools.backports.enum_backport import IntEnum
 load_framework('AVFoundation')
 load_framework('AVKit')
 
-class PlayerStatus (Enum):
+class PlayerStatus (IntEnum):
     AVPLAYERSTATUSUNKNOWN = 0
     AVPLAYERSTATUSREADYTOPLAY = 1
     AVPLAYERSTATUSFAILED = 2
