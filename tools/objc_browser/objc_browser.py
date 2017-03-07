@@ -1,6 +1,6 @@
 #def run():
 import ui
-from objc_util import ObjCClass, ObjCInstance, UIColor
+from objc_util import ObjCClass, ObjCInstance, UIColor, c_uint, class_copyMethodList, byref, sel_getName, method_getName, free, class_getSuperclass, NSObject
 from objc_tools import bundles
 import dialogs
 import clipboard
@@ -21,6 +21,7 @@ def matchcell(item, match_lists):
 def class_objects(cla='', alloc=True):
         functions = []
         initializers = []
+        py_methods = []
         try:
             c = ObjCClass(cla)
         except ValueError:
@@ -30,11 +31,18 @@ def class_objects(cla='', alloc=True):
         except:
             return None
         if alloc:
-            try:
-                c.alloc()
-                functions = [x for x in dir(c.alloc()) if x not in initializers]
-            except:
-                functions = []
+            num_methods = c_uint(0)
+            method_list_ptr = class_copyMethodList(c.ptr, byref(num_methods))
+            for i in range(num_methods.value):
+                selector = method_getName(method_list_ptr[i])
+                sel_name = sel_getName(selector)
+                if not isinstance(sel_name, str):
+                    sel_name = sel_name.decode('ascii')
+                py_method_name = sel_name.replace(':',"_")
+                if '.' not in py_method_name:
+                    py_methods.append(py_method_name)
+            free(method_list_ptr)
+        functions = [x for x in py_methods if x not in initializers]
         return [['Initializers',initializers],['Methods', functions]]
         
 class loading (ui.View):
