@@ -10,10 +10,20 @@ def matchcell(item, match_lists):
     for i in match_lists:
         res = None
         p = re.compile(i[0])
+        try:
+            if i[2]:
+                smethod = p.match
+                matching = True
+            else:
+                smethod = p.search
+                matching = False
+        except IndexError:
+            smethod = p.search
+            matching = False
         if type(item) == list:
-            res = any(p.findall(x) for x in item)
+            res = any([smethod(x) for x in item])
         if type(item) == str:
-            res = any(p.findall(item))
+            res = smethod(item)
         if res:
             return i[1]
     return 'white'
@@ -170,7 +180,7 @@ class ClassBrowserController(object):
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
         cell.text_label.text = self.obs[section][1][row]
-        cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'),('shared', '#bff7ff') ])
+        cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'),('shared', '#bff7ff'), ('set', '#caeaff', True) ])
         return cell
 
     def tableview_title_for_header(self, tableview, section):
