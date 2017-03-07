@@ -3,6 +3,7 @@ from objc_tools.backports.enum_backport import IntEnum
 from sys import modules
 from time import time
 from plistlib import loads
+from datetime import datetime
 
 global nowplaying
 nowplaying = None
@@ -53,6 +54,7 @@ def route_has_volume_control():
 class Nowplaying (object):
     def __init__(self):
         self._nowplaying = None
+        self.timestamp = None
     
     def get(self, block = True, timeout=1):
         #handler = ObjCBlock(handle, argtypes=[c_void_p, c_void_p])
@@ -63,8 +65,10 @@ class Nowplaying (object):
             ctime = time()
             while (self._nowplaying == None or self._nowplaying == this.nowplaying) and (time() - ctime < timeout):
                 self._nowplaying = this.nowplaying
+            self.timestamp = datetime.now()
         else:
             self._nowplaying = this.nowplaying
+            self.timestamp = datetime.now()
     
     @property
     def nowplaying(self):
