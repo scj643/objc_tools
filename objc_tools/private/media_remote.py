@@ -4,6 +4,8 @@ from sys import modules
 from time import time
 from plistlib import loads
 from datetime import datetime
+from io import BytesIO
+import Image
 
 global nowplaying
 nowplaying = None
@@ -77,6 +79,15 @@ class Nowplaying (object):
             return loads(b)
         else:
             return None
+            
+    @property
+    def image(self):
+        if 'kMRMediaRemoteNowPlayingInfoArtworkData' in self.nowplaying.keys():
+            f = BytesIO(self.nowplaying['kMRMediaRemoteNowPlayingInfoArtworkData'])
+            return Image.open(f)
+        else:
+            return None
+            
 
 def bhandle(_cmd, d):
         global  nowplaying
