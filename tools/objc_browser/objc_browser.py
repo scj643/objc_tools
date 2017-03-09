@@ -1,10 +1,10 @@
-#def run():
 import ui
 from objc_util import ObjCClass, ObjCInstance, UIColor, c_uint, class_copyMethodList, byref, sel_getName, method_getName, free, class_getSuperclass, NSObject
 from objc_tools import bundles
 import dialogs
 import clipboard
 import re
+
 
 def matchcell(item, match_lists):
     for i in match_lists:
@@ -28,6 +28,7 @@ def matchcell(item, match_lists):
             return i[1]
     return 'white'
 
+
 def class_objects(cla='', alloc=True):
         functions = []
         initializers = []
@@ -48,16 +49,17 @@ def class_objects(cla='', alloc=True):
                 sel_name = sel_getName(selector)
                 if not isinstance(sel_name, str):
                     sel_name = sel_name.decode('ascii')
-                py_method_name = sel_name.replace(':',"_")
+                py_method_name = sel_name.replace(':', "_")
                 if '.' not in py_method_name:
                     py_methods.append(py_method_name)
             free(method_list_ptr)
         functions = [x for x in py_methods if x not in initializers]
-        return [['Initializers',initializers],['Methods', functions]]
-        
+        return [['Initializers', initializers], ['Methods', functions]]
+
+                
 class loading (ui.View):
     def __init__(self):
-        self.activity = ui.ActivityIndicator(name='activity', hides_when_stopped=True, style = ui.ACTIVITY_INDICATOR_STYLE_WHITE_LARGE, touch_enabled = False)
+        self.activity = ui.ActivityIndicator(name='activity', hides_when_stopped=True, style=ui.ACTIVITY_INDICATOR_STYLE_WHITE_LARGE, touch_enabled=False)
         self.activity.center = self.center
         self.add_subview(self.activity)
         self.touch_enabled = False
@@ -75,6 +77,7 @@ class loading (ui.View):
         self.send_to_back()
         self.activity.stop()
 
+
 def get_classes():
     classes = {}
     classes['No Class'] = []
@@ -89,12 +92,11 @@ def get_classes():
                 classes[bundles.bundleForClass(i).bundleID] = [i]
         else:
             classes['No Class'] += [i]
-    
-            
     clist = []
     for k, v in classes.items():
         clist += [[k, v]]
     return clist
+
 
 def get_frameworks():
     flist = []
@@ -114,7 +116,8 @@ def get_frameworks():
     
     flist = sorted(frameworks.keys())
     return {'flist': flist, 'frameworks': frameworks}
-    
+
+  
 class FrameworkClassesDataSource(object):
     '''Pass the items from get_frameworks
     >>> d = get_frameworks()
@@ -135,14 +138,14 @@ class FrameworkClassesDataSource(object):
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
         cell.text_label.text = self.items[row]
-        s = re.compile('default')
         l = class_objects(self.items[row], False)[0][1]
-        cell.background_color = matchcell(l, [('default', '#95ff9e'),('shared', '#bff7ff') ])
+        cell.background_color = matchcell(l, [('default', '#95ff9e'), ('shared', '#bff7ff')])
         cell.accessory_type = 'detail_disclosure_button'
         return cell
 
     def tableview_title_for_header(self, tableview, section):
         return self.name
+
 
 class CopyDelegate (object):
     def tableview_did_select(self, tableview, section, row):
@@ -151,21 +154,38 @@ class CopyDelegate (object):
         dialogs.hud_alert('copied')
     
     def tableview_accessory_button_tapped(self, tableview, section, row, **kwargs):
-        v = ui.TableView()
+        t = ui.TableView()
+        v = ui.NavigationView(t)
         v.name = tableview.data_source.items[row]
-        v.data_source = ClassBrowserController(tableview.data_source.items[row])
+        t.data_source = ClassBrowserController(tableview.data_source.items[row])
+        t.delegate = SuperClassDelegate()
         v.autoresizing = 'wh'
-        v.reload()
+        t.reload()
         if ui.get_window_size().width <= 320:
             v.present('full_screen')
         else:
-            v.width=600
-            v.height=600
-            v.present('popover', popover_location=(0,0))
+            v.width = 600
+            v.height = 800
+            v.flex = 'HR'
+            v.present('popover', popover_location=(0, 0))
+
+
+class SuperClassDelegate (object):
+    def tableview_accessory_button_tapped(self, tableview, section, row, **kwargs):
+        t = ui.TableView()
+        t.data_source = ClassBrowserController(tableview.data_source.obs[0][1][0])
+        t.name = tableview.data_source.obs[0][1][0]
+        t.delegate = SuperClassDelegate()
+        t.reload()
+        tableview.navigation_view.push_view(t)
+
 
 class ClassBrowserController(object):
     def __init__(self, cla=''):
         self.obs = class_objects(cla)
+        self.supercls = ObjCInstance(ObjCClass(cla).superclass())
+        self.obs = [['Superclass', [str(self.supercls)]]] + self.obs
+        pass
 
     def tableview_did_select(self, tableview, section, row):
         clipboard.set(self.obs[section][1][row])
@@ -179,13 +199,14 @@ class ClassBrowserController(object):
 
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
+        if section == 0 and self.obs[section][1][row] != 'NSObject':
+            cell.accessory_type = 'detail_disclosure_button'
         cell.text_label.text = self.obs[section][1][row]
-        cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'),('shared', '#bff7ff'), ('set', '#caeaff', True) ])
+        cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'), ('shared', '#bff7ff'), ('set', '#caeaff', True), ('Error', '#f5ba7a'), ('delegate', '#b780ff')])
         return cell
 
     def tableview_title_for_header(self, tableview, section):
         return self.obs[section][0]
-        
 
 
 class InfoDataSource (object):
@@ -196,7 +217,6 @@ class InfoDataSource (object):
     def tableview_number_of_rows(self, tableview, section):
         # Return the number of rows in the section
         return len(self.items)
-        
         
     def tableview_title_for_header(self, tableview, section):
         return "Framework Info"
@@ -220,7 +240,6 @@ class FrameworkClassesDelegate (object):
         tableview.superview.superview['selected'].data_source = FrameworkClassesDataSource(obj)
         tableview.superview.superview['selected'].reload()
 
-        
     def tableview_accessory_button_tapped(self, tableview, section, row, **kwargs):
         obj = tableview.data_source.fworks['frameworks'][tableview.data_source.fworks['flist'][row]]
         v = ui.TableView()
@@ -232,8 +251,8 @@ class FrameworkClassesDelegate (object):
         if ui.get_window_size().width <= 320:
             v.present('full_screen')
         else:
-            v.width=300
-            v.height=200
+            v.width = 300
+            v.height = 200
             v.present('popover')
 
         
@@ -252,7 +271,7 @@ class AllFrameworksDataSource(object):
 
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
-        #print('section: ', section, ' row: ', row)
+        # print('section: ', section, ' row: ', row)
         cell.text_label.text = self.fworks['flist'][row].split('.')[-1]
         cell.accessory_type = 'detail_disclosure_button'
         return cell
@@ -260,8 +279,9 @@ class AllFrameworksDataSource(object):
     def tableview_title_for_header(self, tableview, section):
         return 'Framework'
 
+
 @ui.in_background
-def reload_data(sender, response = 'Reloaded'):
+def reload_data(sender, response='Reloaded'):
     sender.superview['fwcontainer']['activity'].start()
     sender.enabled = False
     frameworks.fworks = get_frameworks()
@@ -270,12 +290,12 @@ def reload_data(sender, response = 'Reloaded'):
     dialogs.hud_alert('Reloaded')
     sender.enabled = True
     
-
+    
 def run():
     global frameworks
     v = ui.load_view('objc_browser')
     v.background_color = 'efeff4'
-    a=loading()
+    a = loading()
     a.name = 'activity'
     v['fwcontainer'].add_subview(a)
     v['fwcontainer']['activity'].center = v['fwcontainer'].center
@@ -287,14 +307,14 @@ def run():
     v['fwcontainer']['classes'].data_source = frameworks
     reload_data(v['reload'], "Loaded")
     
-    #v['classes'].reload()
+    # v['classes'].reload()
     
-    #h = FrameworkClassesDataSource(d['frameworks']['com.apple.UIKit'])
+    # h = FrameworkClassesDataSource(d['frameworks']['com.apple.UIKit'])
     
-    #v['selected'].data_source = h
-    #v['selected'].reload()
+    # v['selected'].data_source = h
+    # v['selected'].reload()
     
-    #run()
+    # run()
     
     
 if __name__ == '__main__':
