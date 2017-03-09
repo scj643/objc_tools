@@ -110,6 +110,10 @@ class App (object):
         return str(self.objc.bundleURL()).replace('file://', '')
         
     @property
+    def containerPath(self):
+        return str(self.objc.bundleContainerURL()).replace('file://', '')
+        
+    @property
     def teamID(self):
         return str(self.objc.teamID())
         
