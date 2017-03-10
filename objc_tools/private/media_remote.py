@@ -1,5 +1,7 @@
-from objc_util import c_void_p, c_int, c, c_bool, ObjCInstance, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong, nsdata_to_bytes
+from objc_util import c_void_p, c_int, c, c_bool, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong, nsdata_to_bytes
+from objc_tools.c.objc_handler import chandle
 from objc_tools.backports.enum_backport import IntEnum
+from objc_tools.c import dispatch
 from sys import modules
 from time import time
 from plistlib import loads
@@ -30,21 +32,31 @@ class Commands (IntEnum):
 MRMediaRemoteGetNowPlayingInfo = c.MRMediaRemoteGetNowPlayingInfo
 MRMediaRemoteGetNowPlayingInfo.argtypes = [c_void_p, ObjCBlock]
 
+MRMediaRemoteGetNowPlayingApplicationIsPlaying = c.MRMediaRemoteGetNowPlayingApplicationIsPlaying
+MRMediaRemoteGetNowPlayingApplicationIsPlaying.argtypes = [c_void_p, ObjCBlock]
+
 MRMediaRemoteSendCommand = c.MRMediaRemoteSendCommand
 MRMediaRemoteSendCommand.argtypes = [c_int, c_void_p]
 MRMediaRemoteSendCommand.restype = c_bool
 
-dispatch_get_global_queue = c.dispatch_get_global_queue
-dispatch_get_global_queue.argtypes = [c_long, c_ulong]
-dispatch_get_global_queue.restype = c_void_p
+MRMediaRemoteUnregisterForNowPlayingNotifications = c.MRMediaRemoteUnregisterForNowPlayingNotifications
+MRMediaRemoteUnregisterForNowPlayingNotifications.argtypes = []
+MRMediaRemoteUnregisterForNowPlayingNotifications.restype = None
 
-q=dispatch_get_global_queue(0, 0)
+MRMediaRemoteRegisterForNowPlayingNotifications = c.MRMediaRemoteRegisterForNowPlayingNotifications
+MRMediaRemoteRegisterForNowPlayingNotifications.argtypes = []
+
+MRMediaRemoteCopyPickableRoutes = c.MRMediaRemoteCopyPickableRoutes
+MRMediaRemoteCopyPickableRoutes.restype = c_void_p
+
+q=dispatch.dispatch_get_global_queue(0, 0)
 
 def routes():
     MRMediaRemoteCopyPickableRoutes = c.MRMediaRemoteCopyPickableRoutes
     MRMediaRemoteCopyPickableRoutes.argtypes = []
     MRMediaRemoteCopyPickableRoutes.restype = c_void_p
-    return ObjCInstance(MRMediaRemoteCopyPickableRoutes())
+    MRMediaRemoteCopyPickableRoutes.errcheck = chandle
+    return MRMediaRemoteCopyPickableRoutes()
 
 def route_has_volume_control():
     MRMediaRemotePickedRouteHasVolumeControl = c.MRMediaRemotePickedRouteHasVolumeControl
@@ -74,16 +86,20 @@ class Nowplaying (object):
     
     @property
     def nowplaying(self):
-        if self._nowplaying:
+        if self._nowplaying.ptr:
             b = nsdata_to_bytes(self._nowplaying.plistData())
-            return loads(b)
+            data = loads(b)
+            # striping the prefix from items
+            for i in data:
+                data[i.replace('kMRMediaRemoteNowPlayingInfo','')] = data.pop(i)
+            return data
         else:
             return None
             
     @property
     def image(self):
-        if 'kMRMediaRemoteNowPlayingInfoArtworkData' in self.nowplaying.keys():
-            f = BytesIO(self.nowplaying['kMRMediaRemoteNowPlayingInfoArtworkData'])
+        if 'ArtworkData' in self.nowplaying.keys():
+            f = BytesIO(self.nowplaying['ArtworkData'])
             return Image.open(f)
         else:
             return None
@@ -91,23 +107,25 @@ class Nowplaying (object):
 
 def bhandle(_cmd, d):
         global  nowplaying
-        nowplaying = ObjCInstance(d)
+        nowplaying = chandle(d, None, None)
         
         
-queue = dispatch_get_global_queue(0, 0)
+queue = dispatch.dispatch_get_global_queue(0, 0)
 MRMediaRemoteGetNowPlayingInfo = c.MRMediaRemoteGetNowPlayingInfo
 MRMediaRemoteGetNowPlayingInfo.argtypes = [c_void_p, ObjCBlock]
 handler = ObjCBlock(bhandle, argtypes=[c_void_p, c_void_p])
 
-def get():
+
+def update_global():
     MRMediaRemoteGetNowPlayingInfo(queue, handler)
+
 
 def set_route(route, pw):
     MRMediaRemoteSetPickedRouteWithPassword = c.MRMediaRemoteSetPickedRouteWithPassword
     MRMediaRemoteSetPickedRouteWithPassword.argtypes=[c_void_p, c_void_p]
     MRMediaRemoteSetPickedRouteWithPassword(ns(route).ptr, ns(pw).ptr)
     
-    
+
 if __name__ == '__main__':    
     n=Nowplaying()
     n.get(True)

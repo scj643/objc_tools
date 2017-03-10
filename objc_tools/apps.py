@@ -114,6 +114,14 @@ class App (object):
         return str(self.objc.bundleContainerURL()).replace('file://', '')
         
     @property
+    def reciptPath(self):
+        return str(self.objc.appStoreReceiptURL()).replace('file://', '')
+        
+    @property
+    def dataContainerPath(self):
+        return str(self.objc.dataContainerURL()).replace('file://', '')
+        
+    @property
     def teamID(self):
         return str(self.objc.teamID())
         

@@ -11,7 +11,7 @@ Modified by scj643
 Origonal name pythonista_add_action.py
 
 '''
-from objc_util import *
+from objc_util import ObjCClass
 NSUserDefaults = ObjCClass('NSUserDefaults')
 
 
