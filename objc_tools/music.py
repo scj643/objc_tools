@@ -1,8 +1,10 @@
-from objc_util import ObjCClass, NSBundle, uiimage_to_png, nsurl, ObjCInstance
+from objc_util import ObjCClass, NSBundle, uiimage_to_png, nsurl, ObjCInstance, ns
 from io import BytesIO
 from PIL import Image
 from urllib.parse import urlparse
 from objc_tools.device import osVersion
+from objc_tools.backports.enum_backport import IntEnum, Flag
+from objc_tools.foundation.error import ObjcErrorHandler
 media_player_bundle = NSBundle.bundleWithPath_('/System/Library/Frameworks'
                                                '/MediaPlayer.framework')
 media_player_bundle.load()
@@ -17,7 +19,28 @@ MPMediaPropertyPredicate = ObjCClass("MPMediaPropertyPredicate")
 MPMediaItem = ObjCClass('MPMediaItem')
 
 
-musicapp = MPMusicPlayerController.systemMusicPlayer()
+class RepeatMode (IntEnum):
+    Default = 0
+    # We use lowercase none to seperate it from the keyword None
+    none = 1
+    One = 2
+    All = 3
+        
+
+class ShuffleMode (IntEnum):
+    Default = 0
+    Off = 1
+    Songs = 2
+    Albums = 3
+    
+
+class PlaybackState (IntEnum):
+    Stopped = 0
+    Playing = 1
+    Paused = 2
+    Interrupted = 3
+    SeekingForward = 4
+    SeekingBackward = 5
 
 
 class FileDesc (object):
@@ -26,7 +49,8 @@ class FileDesc (object):
         if type(url) == str:
             url = nsurl(url)
         if type(url) == ObjCInstance:
-            self.sf = file_handler.initForReading_error_(url, None)
+            self.errorhandler = eHandler()
+            self._objc = file_handler.initForReading_error_(url, None)
             fformat = self.sf.fileFormat()
             self.sampleRate = fformat.sampleRate()
             self.channels = fformat.channelCount()
@@ -34,7 +58,9 @@ class FileDesc (object):
 
 
 class Song (object):
-    """Parses song items"""
+    """Parses song items
+    :song: an objc instance of a song item
+    """
     def __init__(self, song):
         try:
             song.title()
@@ -66,7 +92,7 @@ class Song (object):
         else:
             self.bpm = None
         self.assetURL = song.assetURL()
-        self.song = song
+        self._objc = song
 
     def __str__(self):
         return '{0} - {1} - ({2})'.format(self.title, self.artist, self.album)
@@ -78,8 +104,8 @@ class Song (object):
         """Get artwork for the song item
         brep determines if we want a PIL image or just the binary version
         """
-        if self.song.artworkCatalog():
-            uiimage = self.song.artworkCatalog().bestImageFromDisk()
+        if self._objc.artworkCatalog():
+            uiimage = self._objc.artworkCatalog().bestImageFromDisk()
             if brep:
                 return uiimage_to_png(uiimage)
             else:
@@ -101,38 +127,47 @@ class Playlist (object):
         except AttributeError:
             raise TypeError('Not a playlist item')
         self.title = str(playlist.name())
-        self.items = []
         self.cloudMix = playlist.isCloudMix()
         self.inLibrary = playlist.existsInLibrary()
-        self.artists = []
-        if playlist.representativeArtists():
-            for i in playlist.representativeArtists():
-                self.artists += [i]
-        self.description = str(playlist.descriptionText())
+        if iOS_version >= 9.3:
+            self.description = str(playlist.descriptionText())
+            self.authorName = str(playlist.authorDisplayName())
+        else:
+            self.description = None
+            self.authorName = None
         self.itemCount = playlist.count()
-        self.playlist = playlist
+        self._objc = playlist
     
+    class Attributes (Flag):
+        AttributeNone    = 0
+        AttributeOnTheGo = (1 << 0) # if set, the playlist was created on a device rather than synced from iTunes
+        AttributeSmart   = (1 << 1)
+        AttributeGenius  = (1 << 2)
     
     def __str__(self):
         return self.title
     
-    
     def __repr__(self):
         return "<Playlist: {0}>".format(self.title)
-        
     
-    def getSongs(self):
+    @property
+    def attributes(self):
+        return self.Attributes(self._objc.playlistAttributes())
+    
+    @property
+    def songs(self):
         """Populate the items item"""
-        for i in self.playlist.items():
-            self.items += [Song(i)]
-    
+        returns = []
+        for i in self._objc.items():
+            returns += [Song(i)]
+        return returns
     
     def artwork(self, brep=False):
         """Get artwork for the song item
         brep determines if we want a PIL image or just the binary version
         """
-        if self.playlist.artworkCatalog():
-            uiimage = self.playlist.artworkCatalog().bestImageFromDisk()
+        if self._objc.artworkCatalog():
+            uiimage = self._objc.artworkCatalog().bestImageFromDisk()
             if brep:
                 return uiimage_to_png(uiimage)
             else:
@@ -141,7 +176,6 @@ class Playlist (object):
         else:
             return None
             
-            
     def setName(self, text):
         """Sets the name of the playlist
         Returns True or False if the name was changed or not
@@ -149,7 +183,7 @@ class Playlist (object):
         if type(text) != str:
             raise TypeError('Must be string')
         else:
-            state = self.playlist.setValue_forProperty_(text,'name')
+            state = self._objc.setValue_forProperty_(text, 'name')
             if state:
                 self.title = text
                 return True
@@ -175,11 +209,10 @@ class Playlist (object):
             return Image.open(i)
 """
 
-
     def addSong(self, song):
-        if type(song) == Song:
-            if iOS_version > 9.3:
-                self.playlist.addItem_completionBlock_(song.song, None)
+        if isinstance(song, (Song)):
+            if iOS_version >= 9.3:
+                self._objc.addItem_completionBlock_(song._objc, None)
             else:
                 raise OSError("Adding songs requires iOS 9.3 or greater")
         else:
@@ -203,10 +236,9 @@ class Filter (object):
         returns = '<filter '
         for i in self.query:
             returns += '[Query: {0}, Property: {1}, Contains: {2}], '.format(i['query'], i['property'], i['contains'])
-        returns = returns.rsplit(',',1)[0]
+        returns = returns.rsplit(',', 1)[0]
         return returns+'>'
         
-    
     def add(self, query, ftype, contains):
         if not canFilter(ftype):
             raise TypeError('ftype not filterable')
@@ -222,150 +254,143 @@ class Filter (object):
             returns += [Song(i)]
         return returns
         
+
+class NowPlayingController (object):
+    def __init__(self, _objc=MPMusicPlayerController.systemMusicPlayer()):
+        self._objc = _objc
+        self.error = None
         
-def repeat_mode():
-    status = musicapp.repeatMode()
-    if status == 0:
-        return 'Default'
-    if status == 1:
-        return 'None'
-    if status == 2:
-        return 'One'
-    if status == 3:
-        return 'All'
+    @property
+    def repeat(self):
+        return RepeatMode(self._objc.repeatMode())
+    
+    @repeat.setter
+    def repeat(self, mode):
+        """Set the music player repeat mode
+           Must be an int or RepeatMode Object
+        """
+        self._objc.setRepeatMode_(int(mode))
         
-
-def set_repeat_mode(mode):
-    """Set the music player repeat mode
-    Can be 'Default', 'None', 'One', or 'All'
-    """
-    if mode == 'Default':
-        musicapp.setRepeatMode_(0)
-    if mode == 'None':
-        musicapp.setRepeatMode_(1)
-    if mode == 'One':
-        musicapp.setRepeatMode_(2)
-    if mode == 'All':
-        musicapp.setRepeatMode_(3)
-
-                
-def shuffle_mode():
-    status = musicapp.shuffleMode()
-    if status == 0:
-        return 'Default'
-    if status == 1:
-        return 'Off'
-    if status == 2:
-        return 'Songs'
-    if status == 3:
-        return 'Albums'
-
-                
-def set_shuffle_mode(mode):
-    """Set the music player shuffel mode
-    Can be 'Default', 'Off', 'Songs', or 'Albums'
-    """
-    if mode == 'Default':
-        musicapp.setShuffleMode_(0)
-    if mode == 'Off':
-        musicapp.setShuffleMode_(1)
-    if mode == 'Songs':
-        musicapp.setShuffleMode_(2)
-    if mode == 'Albums':
-        musicapp.setShuffleMode_(3)
-
-
-def playback_status():
-    """Gets the current playback state
-    Returned as a human readable string
-    """
-    status = musicapp.playbackState()
-    if status == 0:
-        return 'Stopped'
-    if status == 1:
-        return 'Playing'
-    if status == 2:
-        return 'Paused'
-    if status == 3:
-        return 'Interrupted'
-    if status == 4:
-        return 'SeekingForward'
-    if status == 5:
-        return 'SeekingBackward'
+    @property
+    def shuffle(self):
+        return ShuffleMode(self._objc.shuffleMode())
         
-
-def nowplaying():
-    """Returns the now playing song as a Song item"""
-    np = musicapp.nowPlayingItem()
-    if np:
-        return Song(np)
-
-
-def play():
-    """Starts playback of the music app"""
-    musicapp.play()
-
-
-def pause():
-    """Pauses playback of the music app"""
-    musicapp.pause()
-
-
-def set_volume(v):
-    """Officially unsupported method of changing the volume
-    Must be a float from 0 to 1
-    """
-    if type(v) != float:
-        if type(v) == int:
-            v = float(v)
+    @shuffle.setter
+    def shuffle(self, mode):
+        """Set the player's shuffle mode
+           Must be a ShuffleMode item or an int
+        """
+        self._objc.setShuffleMode_(int(mode))
+    
+    @property
+    def state(self):
+        return PlaybackState(self._objc.playbackState())
+        
+    @property
+    def now_playing(self):
+        if self._objc.nowPlayingItem():
+            return Song(self._objc.nowPlayingItem())
         else:
-            raise TypeError('Has to be a number')
-
-    if not 0 <= v <= 1:
-        raise ValueError('Has to be between 0 or 1')
+            return None
     
-    musicapp.setVolume_(v)
+    @now_playing.setter
+    def now_playing(self, item):
+        if isinstance(item, Song):
+            self._objc.setNowPlayingItem_(item._objc)
 
-
-def get_volume():
-    """Get's the current volume"""
-    return musicapp.volume()
-
-
-def ptoggle():
-    """Toggles playback state of the music app"""
-    status = playback_status()
-    if status == 'Playing':
-        musicapp.pause()
-    else:
-        musicapp.play()
-
+    def play(self):
+        """Starts playback of the music app"""
+        self._objc.play()
+    
+    def pause(self):
+        """Pauses playback of the music app"""
+        self._objc.pause()
         
-def stop():
-    """Stops playback of the music app"""
-    musicapp.stop()
-
-
-def skip_next():
-    """Skips to the next song in the music app"""
-    musicapp.skipInDirection_error_(1, None)
-
-
-def replay():
-    """Returns to the begining of the current song"""
-    musicapp.setCurrentPlaybackTime_(0)
+    def play_pause(self):
+        """Toggles playback state of the music app"""
+        if self.state == PlaybackState.Playing:
+            self._objc.pause()
+        else:
+            self._objc.play()
     
-
-def skip_previous():
-    """Returns to the song before the current song in the music app"""
-    musicapp.skipInDirection_error_(-1, None)
+    def stop(self):
+        """Stops playback of the music app"""
+        self._objc.stop()
     
-
-def next_song_info():
-    """Returns the song instance of the next song to be played"""
-    cur_index = musicapp.indexOfNowPlayingItem()
-    return Song(musicapp.nowPlayingItemAtIndex_(cur_index+1))
-
+    def skip_next(self):
+        """Skips to the next song in the music app"""
+        error = ObjcErrorHandler()
+        self._objc.skipInDirection_error_(1, error)
+        e = error.error()
+        self.error = e
+    
+    def replay(self):
+        """Returns to the begining of the current song"""
+        self._objc.setCurrentPlaybackTime_(0)
+    
+    def skip_previous(self):
+        error = ObjcErrorHandler()
+        """Returns to the song before the current song in the music app"""
+        self._objc.skipInDirection_error_(-1, error)
+        e = error.error()
+        self.error = e
+    
+    @property
+    def next_song_info(self):
+        """Returns the song instance of the next song to be played"""
+        cur_index = self._objc.indexOfNowPlayingItem()
+        return Song(self._objc.nowPlayingItemAtIndex_(cur_index+1))
+    
+    @property
+    def volume(self):
+        """Get's the current volume"""
+        return self._objc.volume()
+        
+    @volume.setter
+    def volume(self, v):
+        """Officially unsupported method of changing the volume
+        Must be a float from 0 to 1
+        """
+        if type(v) != float:
+            if type(v) == int:
+                v = float(v)
+            else:
+                raise TypeError('Has to be a number')
+    
+        if not 0 <= v <= 1:
+            raise ValueError('Has to be between 0 or 1')
+        
+        self._objc.setVolume_(v)
+        
+    @property
+    def playbackRate(self):
+        return self._objc.currentPlaybackRate()
+    
+    @playbackRate.setter
+    def playbackRate(self, rate):
+        self._objc.setCurrentPlaybackRate_(rate)
+        
+    @property
+    def playbackTime(self):
+        return self._objc.currentPlaybackTime()
+        
+    @playbackTime.setter
+    def playbackTime(self, time):
+        self._objc.setCurrentPlaybackTime_(time)
+        
+    @property
+    def items_amount(self):
+        return self._objc.numberOfItems()
+        
+    @property
+    def index_of_nowplaying(self):
+        return self ._objc.indexOfNowPlayingItem()
+        
+    def song_at_index(self, index):
+        while index > self.items_amount:
+            # wrap around so we always get an item
+            index -= self.items_amount
+        return Song(self._objc.nowPlayingItemAtIndex_(index))
 
 def library():
     """Returns all the items in the music app's library"""
@@ -386,21 +411,31 @@ def playlists():
     return returns
 
 
-def authStatus():
+def auth_status():
     if iOS_version < 9.3:
         raise OSError("Not needed before iOS 9.3")
         return True
     else:
         status = MPMediaLibrary.authorizationStatus()
-        if status == 3:
-            return 'Authorized'
-        if status == 1:
-            return 'Denied'
-        if status == 0:
-            return 'Unkown'
-        if status == 2:
-            return 'Restricted'
+        
+        class AuthStatus (IntEnum):
+            Unknown = 0
+            Denied = 1
+            Restricted = 2
+            Authorized = 3
+        return AuthStatus(status)
             
 
 def canFilter(key):
     return MPMediaItem.canFilterByProperty_(key)
+    
+
+def songlist_to_array(songs):
+    objcitems = []
+    for i in songs:
+        objcitems += [i._objc]
+    return ns(objcitems)
+    
+if __name__ == '__main__':
+    p = playlists()[0]
+    n = NowPlayingController()
