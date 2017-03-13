@@ -1,5 +1,5 @@
 from objc_util import NSBundle, ObjCInstance, ObjCClass, c_void_p
-from objc_tools.foundation.error import Handler
+from objc_tools.foundation.error import ObjcErrorHandler
 from os import listdir
 from glob import glob
 from objc_tools.objc_json import objc_to_py
@@ -54,7 +54,7 @@ class Bundle (object):
         '''
         :result: a BundleLoadState object
         '''
-        pointer = Handler()
+        pointer = ObjcErrorHandler()
         result = self.objc.loadAndReturnError_(pointer)
         error = pointer.error()
         return BundleLoadState(result, error)
