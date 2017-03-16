@@ -183,7 +183,10 @@ class SuperClassDelegate (object):
 class ClassBrowserController(object):
     def __init__(self, cla=''):
         self.obs = class_objects(cla)
-        self.supercls = ObjCInstance(ObjCClass(cla).superclass())
+        try:
+            self.supercls = ObjCInstance(ObjCClass(cla).superclass())
+        except AttributeError:
+            self.supercls = None
         self.obs = [['Superclass', [str(self.supercls)]]] + self.obs
         pass
 
@@ -199,7 +202,7 @@ class ClassBrowserController(object):
 
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
-        if section == 0 and self.obs[section][1][row] != 'NSObject':
+        if section == 0 and self.obs[section][1][row] not in ['NSObject', 'None']:
             cell.accessory_type = 'detail_disclosure_button'
         cell.text_label.text = self.obs[section][1][row]
         cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'), ('shared', '#bff7ff'), ('set', '#caeaff', True), ('Error', '#f5ba7a'), ('delegate', '#b780ff')])
