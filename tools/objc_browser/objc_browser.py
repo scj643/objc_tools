@@ -275,8 +275,13 @@ class AllFrameworksDataSource(object):
     def tableview_cell_for_row(self, tableview, section, row):
         cell = ui.TableViewCell()
         # print('section: ', section, ' row: ', row)
-        cell.text_label.text = self.fworks['flist'][row].split('.')[-1]
+        name = self.fworks['flist'][row]
+        cell.text_label.text = name.split('.')[-1]
         cell.accessory_type = 'detail_disclosure_button'
+        if name in self.fworks['frameworks'].keys():
+            if self.fworks['frameworks'][name]['bundle']:
+                b = self.fworks['frameworks'][name]['bundle'].path
+                cell.background_color = matchcell(b, [('/System/Library/Frameworks/', '#edffdf'), ('/System/Library/PrivateFrameworks/', '#ffd5d5'), ('Pythonista3', '#95ff9e')])
         return cell
 
     def tableview_title_for_header(self, tableview, section):
