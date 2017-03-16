@@ -139,10 +139,10 @@ class Playlist (object):
         self._objc = playlist
     
     class Attributes (Flag):
-        AttributeNone    = 0
-        AttributeOnTheGo = (1 << 0) # if set, the playlist was created on a device rather than synced from iTunes
-        AttributeSmart   = (1 << 1)
-        AttributeGenius  = (1 << 2)
+        AttributeNone = 0
+        AttributeOnTheGo = (1 << 0)  # if set, the playlist was created on a device rather than synced from iTunes
+        AttributeSmart = (1 << 1)
+        AttributeGenius = (1 << 2)
     
     def __str__(self):
         return self.title
