@@ -4,26 +4,51 @@ from objc_tools import bundles
 import dialogs
 import clipboard
 import re
+from sys import argv
+import json
+import os
 
 
+def config_handler():
+    global objc_browser_conf
+    conf_path = os.path.expanduser('~/Documents/objc_browser_conf/')
+    conf_filename = 'conf.json'
+    objc_browser_conf = {}
+    default_conf = {'FrameworkClassesHighlight': [('.*default', '#95ff9e'), ('.*shared', '#bff7ff')],
+                    'ClassBrowserHighlight': [('.*default', '#95ff9e'), ('.*shared', '#bff7ff'),
+                                              ('set', '#caeaff'), ('.*Error', '#f5ba7a'),
+                                              ('.*delegate', '#b780ff')],
+                    'AllFrameworksHighlight': [('/System/Library/Frameworks/', '#edffdf'),
+                                               ('/System/Library/PrivateFrameworks/', '#ffd5d5'),
+                                               ('.*Pythonista3', '#95ff9e')]}
+    if not os.path.exists(conf_path):
+        os.mkdir(conf_path)
+    if os.path.exists(conf_path+conf_filename):
+        with open(conf_filename+conf_filename, 'r') as f:
+            objc_browser_conf = json.load(f)
+    else:
+        with open(conf_path+conf_filename, 'w') as f:
+            json.dump(default_conf, f, indent=4)
+    matched = []
+    for i in default_conf.keys():
+        if i in objc_browser_conf.keys():
+            matched += [i]
+    if not matched == list(default_conf.keys()):
+        for i in default_conf.keys():
+            if not i in objc_browser_conf.keys():
+                objc_browser_conf[i] = default_conf[i]
+        with open(conf_filename+conf_filename, 'w') as f:
+            json.dump(objc_browser_conf, f, indent=4)
+      
+                  
 def matchcell(item, match_lists):
     for i in match_lists:
         res = None
         p = re.compile(i[0])
-        try:
-            if i[2]:
-                smethod = p.match
-                matching = True
-            else:
-                smethod = p.search
-                matching = False
-        except IndexError:
-            smethod = p.search
-            matching = False
         if type(item) == list:
-            res = any([smethod(x) for x in item])
+            res = any([p.match(x) for x in item])
         if type(item) == str:
-            res = smethod(item)
+            res = p.match(item)
         if res:
             return i[1]
     return 'white'
@@ -139,7 +164,7 @@ class FrameworkClassesDataSource(object):
         cell = ui.TableViewCell()
         cell.text_label.text = self.items[row]
         l = class_objects(self.items[row], False)[0][1]
-        cell.background_color = matchcell(l, [('default', '#95ff9e'), ('shared', '#bff7ff')])
+        cell.background_color = matchcell(l, objc_browser_conf['FrameworkClassesHighlight'])
         cell.accessory_type = 'detail_disclosure_button'
         return cell
 
@@ -205,7 +230,7 @@ class ClassBrowserController(object):
         if section == 0 and self.obs[section][1][row] not in ['NSObject', 'None']:
             cell.accessory_type = 'detail_disclosure_button'
         cell.text_label.text = self.obs[section][1][row]
-        cell.background_color = matchcell(cell.text_label.text, [('default', '#95ff9e'), ('shared', '#bff7ff'), ('set', '#caeaff', True), ('Error', '#f5ba7a'), ('delegate', '#b780ff')])
+        cell.background_color = matchcell(cell.text_label.text, objc_browser_conf['ClassBrowserHighlight'])
         return cell
 
     def tableview_title_for_header(self, tableview, section):
@@ -281,7 +306,7 @@ class AllFrameworksDataSource(object):
         if name in self.fworks['frameworks'].keys():
             if self.fworks['frameworks'][name]['bundle']:
                 b = self.fworks['frameworks'][name]['bundle'].path
-                cell.background_color = matchcell(b, [('/System/Library/Frameworks/', '#edffdf'), ('/System/Library/PrivateFrameworks/', '#ffd5d5'), ('Pythonista3', '#95ff9e')])
+                cell.background_color = matchcell(b, objc_browser_conf['AllFrameworksHighlight'])
         return cell
 
     def tableview_title_for_header(self, tableview, section):
@@ -300,7 +325,10 @@ def reload_data(sender, response='Reloaded'):
     
     
 def run():
+    config_handler()
     global frameworks
+    if 'debug' in argv:
+        global v
     v = ui.load_view('objc_browser')
     v.background_color = 'efeff4'
     a = loading()

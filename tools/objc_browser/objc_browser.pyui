@@ -1,25 +1,25 @@
 [
   {
     "selected" : false,
-    "frame" : "{{0, 0}, {766, 543}}",
+    "frame" : "{{0, 0}, {1024, 768}}",
     "class" : "View",
     "nodes" : [
       {
-        "selected" : false,
-        "frame" : "{{316, 6}, {384, 528}}",
+        "selected" : true,
+        "frame" : "{{316, 6}, {662, 753}}",
         "class" : "TableView",
         "nodes" : [
 
         ],
         "attributes" : {
-          "flex" : "WHR",
+          "flex" : "WH",
           "data_source_items" : "",
           "name" : "selected",
           "frame" : "{{63, 144}, {200, 200}}",
-          "class" : "TableView",
-          "uuid" : "C466A6D2-2532-414E-B79E-472E37699ED8",
           "data_source_number_of_lines" : 1,
+          "class" : "TableView",
           "background_color" : "RGBA(1.0, 1.0, 1.0, 1.0)",
+          "uuid" : "C466A6D2-2532-414E-B79E-472E37699ED8",
           "data_source_delete_enabled" : false,
           "row_height" : 44,
           "data_source_font_size" : 18
@@ -27,7 +27,7 @@
       },
       {
         "selected" : false,
-        "frame" : "{{728, 6}, {32, 32}}",
+        "frame" : "{{986, 46}, {32, 32}}",
         "class" : "Button",
         "nodes" : [
 
@@ -49,12 +49,12 @@
       },
       {
         "selected" : false,
-        "frame" : "{{6, 6}, {302, 531}}",
+        "frame" : "{{6, 6}, {302, 753}}",
         "class" : "View",
         "nodes" : [
           {
             "selected" : false,
-            "frame" : "{{0, 0}, {296, 531}}",
+            "frame" : "{{0, 0}, {302, 753}}",
             "class" : "TableView",
             "nodes" : [
 
@@ -62,11 +62,11 @@
             "attributes" : {
               "flex" : "WH",
               "data_source_items" : "",
-              "data_source_number_of_lines" : 1,
-              "frame" : "{{51, 166}, {200, 200}}",
-              "class" : "TableView",
               "uuid" : "5F35F680-6A26-441E-9C77-0F0E9ABF7C2B",
+              "frame" : "{{51, 166}, {200, 200}}",
+              "data_source_number_of_lines" : 1,
               "background_color" : "RGBA(1.0, 1.0, 1.0, 1.0)",
+              "class" : "TableView",
               "data_source_delete_enabled" : false,
               "data_source_font_size" : 18,
               "name" : "classes",
@@ -91,13 +91,32 @@
           "name" : "fwcontainer",
           "flex" : "HRB"
         }
+      },
+      {
+        "selected" : false,
+        "frame" : "{{986, 6}, {32, 32}}",
+        "class" : "Button",
+        "nodes" : [
+
+        ],
+        "attributes" : {
+          "flex" : "LB",
+          "image_name" : "iob:ios7_gear_outline_32",
+          "frame" : "{{343, 256}, {80, 32}}",
+          "title" : "Settings",
+          "uuid" : "021A73F8-A70C-4A55-823E-2B2C479065B5",
+          "class" : "Button",
+          "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)",
+          "font_size" : 15,
+          "name" : "settings"
+        }
       }
     ],
     "attributes" : {
       "flex" : "",
       "enabled" : true,
       "tint_color" : "RGBA(0.000000,0.478000,1.000000,1.000000)",
-      "name" : "main",
+      "name" : "ObjC Browser",
       "border_color" : "RGBA(0.000000,0.000000,0.000000,1.000000)",
       "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)"
     }
