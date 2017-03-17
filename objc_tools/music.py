@@ -392,6 +392,11 @@ class NowPlayingController (object):
             index -= self.items_amount
         return Song(self._objc.nowPlayingItemAtIndex_(index))
 
+    def song_list(self):
+        returns = []
+        for i in range(self.items_amount):
+            returns += [self.song_at_index(i)]
+        return returns
 
 def library():
     """Returns all the items in the music app's library"""
