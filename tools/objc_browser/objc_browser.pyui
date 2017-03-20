@@ -5,7 +5,7 @@
     "class" : "View",
     "nodes" : [
       {
-        "selected" : true,
+        "selected" : false,
         "frame" : "{{316, 6}, {662, 753}}",
         "class" : "TableView",
         "nodes" : [
@@ -19,10 +19,10 @@
           "data_source_number_of_lines" : 1,
           "class" : "TableView",
           "background_color" : "RGBA(1.0, 1.0, 1.0, 1.0)",
-          "uuid" : "C466A6D2-2532-414E-B79E-472E37699ED8",
           "data_source_delete_enabled" : false,
+          "data_source_font_size" : 18,
           "row_height" : 44,
-          "data_source_font_size" : 18
+          "uuid" : "C466A6D2-2532-414E-B79E-472E37699ED8"
         }
       },
       {
@@ -48,7 +48,7 @@
         }
       },
       {
-        "selected" : false,
+        "selected" : true,
         "frame" : "{{6, 6}, {302, 753}}",
         "class" : "View",
         "nodes" : [
@@ -62,13 +62,13 @@
             "attributes" : {
               "flex" : "WH",
               "data_source_items" : "",
-              "uuid" : "5F35F680-6A26-441E-9C77-0F0E9ABF7C2B",
+              "data_source_delete_enabled" : false,
               "frame" : "{{51, 166}, {200, 200}}",
+              "uuid" : "5F35F680-6A26-441E-9C77-0F0E9ABF7C2B",
               "data_source_number_of_lines" : 1,
               "background_color" : "RGBA(1.0, 1.0, 1.0, 1.0)",
-              "class" : "TableView",
-              "data_source_delete_enabled" : false,
               "data_source_font_size" : 18,
+              "class" : "TableView",
               "name" : "classes",
               "row_height" : 44
             }
@@ -107,18 +107,18 @@
           "uuid" : "021A73F8-A70C-4A55-823E-2B2C479065B5",
           "class" : "Button",
           "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)",
-          "font_size" : 15,
-          "name" : "settings"
+          "name" : "settings",
+          "font_size" : 15
         }
       }
     ],
     "attributes" : {
       "flex" : "",
       "enabled" : true,
-      "tint_color" : "RGBA(0.000000,0.478000,1.000000,1.000000)",
-      "name" : "ObjC Browser",
       "border_color" : "RGBA(0.000000,0.000000,0.000000,1.000000)",
-      "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)"
+      "name" : "ObjC Browser",
+      "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)",
+      "tint_color" : "RGBA(0.000000,0.478000,1.000000,1.000000)"
     }
   }
 ]

@@ -24,7 +24,7 @@ def config_handler():
     if not os.path.exists(conf_path):
         os.mkdir(conf_path)
     if os.path.exists(conf_path+conf_filename):
-        with open(conf_filename+conf_filename, 'r') as f:
+        with open(conf_path+conf_filename, 'r') as f:
             objc_browser_conf = json.load(f)
     else:
         with open(conf_path+conf_filename, 'w') as f:
