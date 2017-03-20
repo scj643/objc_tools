@@ -1,5 +1,5 @@
 # TODO
 
-[ ] SceneKit Lib
-[x] External Display lib
-[ ] Make tests
+- [ ] SceneKit Lib
+- [x] External Display lib
+- [ ] Make tests
