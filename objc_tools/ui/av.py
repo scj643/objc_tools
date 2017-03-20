@@ -2,16 +2,19 @@ from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, CGRect, CG
 from objc_tools.objchandler import urlHandle
 from objc_tools.core.media import CMTime, CMTimeMakeWithSeconds
 import ui
-from objc_tools.backports.enum_backport import IntEnum
+from objc_tools.backports.enum_backport import IntEnum, Enum
 load_framework('AVFoundation')
 load_framework('AVKit')
+
 
 class PlayerStatus (IntEnum):
     AVPLAYERSTATUSUNKNOWN = 0
     AVPLAYERSTATUSREADYTOPLAY = 1
     AVPLAYERSTATUSFAILED = 2
 
+
 LAYER_RESIZE_MODES = ["AVLayerVideoGravityResizeAspect", "AVLayerVideoGravityResizeAspectFill", "AVLayerVideoGravityResize"]
+
 
 AVPlayerViewController = ObjCClass('AVPlayerViewController')
 AVAsset = ObjCClass('AVAsset')
@@ -42,10 +45,16 @@ class Asset (object):
     def isPlayable(self):
         return self._objc.isPlayable()
 
-
     @property
     def isReadable(self):
         return self._objc.isReadable()
+        
+    @property
+    def url(self):
+        return str(self._objc.URL().absoluteString())
+        
+    def __repr__(self):
+        return '<Asset <URL: {}>>'.format(self.url)
 
 
 
@@ -80,7 +89,6 @@ class PlayerItem (object):
     @property
     def status(self):
         return PlayerStatus(self._objc.status())
-
         
     @property
     def asset(self):
@@ -151,6 +159,7 @@ class Player (object):
         if self._objc:
             self._objc.setRate_(r)
 
+
 class PlayerController (object):
     '''A player controller
     Used with player views
@@ -172,7 +181,6 @@ class PlayerController (object):
     def frameRate(self):
         return self._objc.nominalFrameRate()
     
-        
     @property
     def looping(self):
         return self._objc.isLooping()
@@ -194,16 +202,18 @@ class PlayerController (object):
     def seekFramesBackward(self, frames=1):
         for i in frames:
             self._objc.seekFrameBackward_(None)
-        
+
+
 class PlayerView (ui.View):
     '''A player view with controls'''
-    def __init__(self, player = None, pause=True, autoplay=False):
+    def __init__(self, player = None, pause= True, autoplay = False, pip = False):
         self._pause_on_dismiss = pause
         self._objc = ObjCInstance(self)
         self._playerViewController = AVPlayerViewController.new()
         self._objc.addSubview_(self._playerViewController.view())
         self.player = player
         self._autoplay = autoplay
+        self._playerViewController.setAllowsPictureInPicturePlayback_(pip)
         
     @property
     def player(self):
@@ -225,7 +235,6 @@ class PlayerView (ui.View):
         else:
             raise TypeError("player is not able to be set")
 
-
     @player.deleter
     def player(self):
         self._playerViewController.setPlayer_(None)
@@ -241,7 +250,23 @@ class PlayerView (ui.View):
     def layout(self):
         pass
         
+    @property
+    def pipSupported(self):
+        self._playerViewController.allowsPictureInPicturePlayback()
         
+    @pipSupported.setter
+    def pipSupported(self, value):
+        self._playerViewController.setAllowsPictureInPicturePlayback_(value)
+        
+    @property
+    def showsPlaybackControls(self):
+        return self._playerViewController.showsPlaybackControls()
+        
+    @showsPlaybackControls.setter
+    def showsPlaybackControls(self, state):
+        self._playerViewController.setShowsPlaybackControls_(state)
+        
+    
 class PlayerLayerView (ui.View):
     def __init__(self,player, *args, **kwargs):
         ui.View.__init__(self,*args,**kwargs)
@@ -268,8 +293,6 @@ class PlayerLayerView (ui.View):
             self._layer.setVideoGravity_(mode)
         else:
             raise TypeError('{} is not a valid mode'.format(mode))
-            
-        
         
     def layout(self):
         self._layer.setFrame_(
