@@ -12,21 +12,22 @@ import Image
 global nowplaying
 nowplaying = None
 
+
 class Commands (IntEnum):
-    kMRPlay = 0
-    kMRPause = 1
-    kMRTogglePlayPause = 2
-    kMRStop = 3
-    kMRNextTrack = 4
-    kMRPreviousTrack = 5
-    kMRToggleShuffle = 6
-    kMRToggleRepeat = 7
-    kMRStartForwardSeek = 8
-    kMREndForwardSeek = 9
-    kMRStartBackwardSeek = 10
-    kMREndBackwardSeek = 11
-    kMRGoBackFifteenSeconds = 12
-    kMRSkipFifteenSeconds = 13
+    Play = 0
+    Pause = 1
+    TogglePlayPause = 2
+    Stop = 3
+    NextTrack = 4
+    PreviousTrack = 5
+    ToggleShuffle = 6
+    ToggleRepeat = 7
+    StartForwardSeek = 8
+    EndForwardSeek = 9
+    StartBackwardSeek = 10
+    EndBackwardSeek = 11
+    GoBackFifteenSeconds = 12
+    SkipFifteenSeconds = 13
     
 
 MRMediaRemoteGetNowPlayingInfo = c.MRMediaRemoteGetNowPlayingInfo
@@ -51,12 +52,14 @@ MRMediaRemoteCopyPickableRoutes.restype = c_void_p
 
 q=dispatch.dispatch_get_global_queue(0, 0)
 
+
 def routes():
     MRMediaRemoteCopyPickableRoutes = c.MRMediaRemoteCopyPickableRoutes
     MRMediaRemoteCopyPickableRoutes.argtypes = []
     MRMediaRemoteCopyPickableRoutes.restype = c_void_p
     MRMediaRemoteCopyPickableRoutes.errcheck = chandle
     return MRMediaRemoteCopyPickableRoutes()
+
 
 def route_has_volume_control():
     MRMediaRemotePickedRouteHasVolumeControl = c.MRMediaRemotePickedRouteHasVolumeControl
@@ -71,7 +74,7 @@ class Nowplaying (object):
         self.timestamp = None
     
     def get(self, block = True, timeout=1):
-        #handler = ObjCBlock(handle, argtypes=[c_void_p, c_void_p])
+        # handler = ObjCBlock(handle, argtypes=[c_void_p, c_void_p])
         MRMediaRemoteGetNowPlayingInfo(queue, handler)
         this = modules[__name__]
         
@@ -91,7 +94,7 @@ class Nowplaying (object):
             data = loads(b)
             # striping the prefix from items
             for i in data:
-                data[i.replace('kMRMediaRemoteNowPlayingInfo','')] = data.pop(i)
+                data[i.replace('kMRMediaRemoteNowPlayingInfo', '')] = data.pop(i)
             return data
         else:
             return None
@@ -106,7 +109,7 @@ class Nowplaying (object):
             
 
 def bhandle(_cmd, d):
-        global  nowplaying
+        global nowplaying
         nowplaying = chandle(d, None, None)
         
         
@@ -122,11 +125,15 @@ def update_global():
 
 def set_route(route, pw):
     MRMediaRemoteSetPickedRouteWithPassword = c.MRMediaRemoteSetPickedRouteWithPassword
-    MRMediaRemoteSetPickedRouteWithPassword.argtypes=[c_void_p, c_void_p]
+    MRMediaRemoteSetPickedRouteWithPassword.argtypes = [c_void_p, c_void_p]
     MRMediaRemoteSetPickedRouteWithPassword(ns(route).ptr, ns(pw).ptr)
     
+    
+def play_pause():
+    MRMediaRemoteSendCommand(Commands.TogglePlayPause, c_void_p())
 
-if __name__ == '__main__':    
-    n=Nowplaying()
+
+if __name__ == '__main__':
+    n = Nowplaying()
     n.get(True)
 
