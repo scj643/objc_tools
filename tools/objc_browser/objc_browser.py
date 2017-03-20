@@ -29,25 +29,21 @@ def config_handler():
     else:
         with open(conf_path+conf_filename, 'w') as f:
             json.dump(default_conf, f, indent=4)
-    matched = []
-    for i in default_conf.keys():
-        if i in objc_browser_conf.keys():
-            matched += [i]
-    if not matched == list(default_conf.keys()):
-        for i in default_conf.keys():
-            if not i in objc_browser_conf.keys():
-                objc_browser_conf[i] = default_conf[i]
+    unmatched = set(default_conf) - set(objc_browser_conf)
+    if unmatched:
+        for key in unmatched:
+            objc_browser_conf[key] = default_conf[key]
         with open(conf_filename+conf_filename, 'w') as f:
             json.dump(objc_browser_conf, f, indent=4)
-      
-                  
+
+
 def matchcell(item, match_lists):
     for i in match_lists:
         res = None
         p = re.compile(i[0])
-        if type(item) == list:
+        if isinstance(item, list):
             res = any([p.match(x) for x in item])
-        if type(item) == str:
+        if isinstance(item, str):
             res = p.match(item)
         if res:
             return i[1]
