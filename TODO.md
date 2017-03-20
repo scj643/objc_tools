@@ -1,5 +1,6 @@
 # TODO
 
 - [ ] SceneKit Lib
-- [x] External Display lib
+- [ ] External Display lib
 - [ ] Make tests
+- [ ] Standardize code format
