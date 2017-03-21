@@ -1,7 +1,7 @@
 [
   {
     "selected" : false,
-    "frame" : "{{0, 0}, {459, 550}}",
+    "frame" : "{{0, 0}, {607, 546}}",
     "class" : "View",
     "nodes" : [
       {
@@ -30,53 +30,68 @@
         }
       },
       {
-        "selected" : true,
-        "frame" : "{{6, 6}, {390, 44}}",
+        "selected" : false,
+        "frame" : "{{6, 6}, {440, 44}}",
         "class" : "TextField",
         "nodes" : [
 
         ],
         "attributes" : {
           "uuid" : "D9E6B672-3E01-45AD-978D-2A25D4B9E691",
-          "font_size" : 17,
+          "spellchecking_type" : "no",
           "background_color" : "RGBA(0.937255,0.937255,0.956863,1.000000)",
           "frame" : "{{250, 254}, {200, 32}}",
           "alignment" : "left",
           "autocorrection_type" : "no",
           "placeholder" : "Search",
+          "row_height" : 44,
           "font_name" : "<System>",
-          "spellchecking_type" : "no",
           "class" : "TextField",
           "name" : "Filter",
-          "row_height" : 44
+          "font_size" : 17
         }
       },
       {
-        "selected" : false,
-        "frame" : "{{404, 6}, {42, 44}}",
-        "class" : "Button",
+        "selected" : true,
+        "frame" : "{{550, 58}, {51, 31}}",
+        "class" : "Switch",
         "nodes" : [
 
         ],
         "attributes" : {
-          "font_size" : 15,
-          "frame" : "{{310, 254}, {80, 32}}",
-          "title" : "Search",
-          "class" : "Button",
-          "background_color" : "RGBA(0.937255,0.937255,0.956863,1.000000)",
-          "uuid" : "203EDCBA-F788-4902-91E6-F2BAC3B2C976",
-          "name" : "Search",
-          "image_name" : "iob:ios7_search_strong_256"
+          "frame" : "{{254, 264}, {51, 31}}",
+          "value" : false,
+          "class" : "Switch",
+          "name" : "shared_only",
+          "uuid" : "7E214D19-59B7-48C4-96C0-4ABD0AFCA0B9"
+        }
+      },
+      {
+        "selected" : false,
+        "frame" : "{{454, 6}, {147, 44}}",
+        "class" : "Label",
+        "nodes" : [
+
+        ],
+        "attributes" : {
+          "font_name" : "<System>",
+          "frame" : "{{189, 261}, {150, 32}}",
+          "uuid" : "C1DE7097-A344-4EBE-90BE-B274EBA6643C",
+          "class" : "Label",
+          "alignment" : "right",
+          "text" : "Shared Only",
+          "font_size" : 18,
+          "name" : "Shared Only"
         }
       }
     ],
     "attributes" : {
-      "tint_color" : "RGBA(0.000000,0.478000,1.000000,1.000000)",
+      "flex" : "",
       "enabled" : true,
       "border_color" : "RGBA(0.000000,0.000000,0.000000,1.000000)",
-      "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)",
       "name" : "Frameworks",
-      "flex" : ""
+      "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)",
+      "tint_color" : "RGBA(0.000000,0.478000,1.000000,1.000000)"
     }
   }
 ]

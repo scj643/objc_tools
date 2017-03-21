@@ -55,11 +55,23 @@ def matchcell(item, match_lists):
 class SearchMethods (object):
     def __init__(self):
         self.sender = None
+        
+    def filter_shared(self, items):
+        results = []
+        for i in items:
+            current = None
+            modified = i
+            res = [item for item in i['items'] if (matchcell(class_objects(item, False)[0][1], [['.*share', 'yes']]) != 'white')]
+            if res:
+                current = i
+                current['items'] = res
+                results += [current]
+            
+        return results
     
     def started_handler(self, sender):
         # Needed incase the view is dismissed
         self.view = ui.load_view('search')
-        self.view['Search'].action = self.do_search
         self.view['Filter'].clear_button_mode = 'always'
         self.view['Filter'].action = self.do_search
         self.view['results'].delegate = self.CopyDelegate()
@@ -67,7 +79,11 @@ class SearchMethods (object):
         self.view.present('popover', popover_location = sender.center.as_tuple())
         
     def do_search(self, sender):
-        self.view['results'].data_source = FrameworkSearchDataSource(self.search(self.view['Filter'].text))
+        if self.view['shared_only'].value:
+            res = self.filter_shared(self.search(self.view['Filter'].text))
+        else:
+            res = self.search(self.view['Filter'].text)
+        self.view['results'].data_source = FrameworkSearchDataSource(res)
         self.view['results'].reload()
         
     def search(self, query):
@@ -75,9 +91,7 @@ class SearchMethods (object):
         results = []
         for k, v in frameworks.fworks['frameworks'].items():
             bresult = {'bundle': v['bundle'], 'items': []}
-            for i in v['items']:
-                if q.match(i):
-                    bresult['items'] += [i]
+            bresult['items'] = [item for item in v['items'] if q.match(item)]
             if bresult['items']:
                 results += [bresult]
         return results
@@ -415,6 +429,10 @@ def run():
     global frameworks
     if 'debug' in argv:
         global v
+    if 'noui' in argv:
+        frameworks = AllFrameworksDataSource(get_frameworks())
+        return
+    
     v = ui.load_view('objc_browser')
     v.background_color = 'efeff4'
     a = loading()
