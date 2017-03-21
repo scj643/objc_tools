@@ -1,3 +1,4 @@
+
 import ui
 from objc_util import (ObjCClass, ObjCInstance, UIColor, byref, c_uint,
                        class_copyMethodList, free, method_getName, sel_getName)
@@ -129,7 +130,10 @@ class FrameworkSearchDataSource (object):
         return cell
 
     def tableview_title_for_header(self, tableview, section):
-        return self.items[section]['bundle'].bundleID
+        if self.items[section]['bundle']:
+            return self.items[section]['bundle'].bundleID
+        else:
+            return 'None'
 
 
 def class_objects(cla='', alloc=True):
@@ -204,7 +208,8 @@ def get_classes():
 def get_frameworks():
     flist = []
     frameworks = {}
-    frameworks['No Framework'] = {'bundle': None, 'items': []}
+    # Currently not working
+    # frameworks['No Framework'] = {'bundle': None, 'items': []}
     for i in ObjCClass.get_names():
         if bundles.bundleForClass(i):
             try:
@@ -215,7 +220,7 @@ def get_frameworks():
             except KeyError:
                 frameworks[bundles.bundleForClass(i).bundleID] = {'bundle': bundles.bundleForClass(i), 'items': [i]}
         else:
-            frameworks['No Framework']['items'] += [i]
+            pass
 
     flist = sorted(frameworks.keys())
     return {'flist': flist, 'frameworks': frameworks}
@@ -227,7 +232,10 @@ class FrameworkClassesDataSource(object):
     >>> h = FrameworkClassesDataSource(d['frameworks']['com.apple.UIKit'])'''
     def __init__(self, fwork_items):
         self.items = fwork_items['items']
-        self.name = fwork_items['bundle'].bundleID
+        if fwork_items['bundle']:
+            self.name = fwork_items['bundle'].bundleID
+        else:
+            self.name = 'None'
 
     def tableview_did_select(self, tableview, section, row):
         pass
