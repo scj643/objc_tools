@@ -16,8 +16,8 @@ def config_handler():
     conf_path = os.path.expanduser('~/Documents/objc_browser_conf/')
     conf_filename = 'conf.json'
     objc_browser_conf = {}
-    default_conf = {'FrameworkClassesHighlight': [('.*default', '#95ff9e'), ('.*shared', '#bff7ff')],
-                    'ClassBrowserHighlight': [('.*default', '#95ff9e'), ('.*shared', '#bff7ff'),
+    default_conf = {'FrameworkClassesHighlight': [('.*shared', '#bff7ff'), ('.*default', '#95ff9e')],
+                    'ClassBrowserHighlight': [('.*shared', '#bff7ff'), ('.*default', '#95ff9e'),
                                               ('set', '#caeaff'), ('.*Error', '#f5ba7a'),
                                               ('.*delegate', '#b780ff')],
                     'AllFrameworksHighlight': [('/System/Library/Frameworks/', '#edffdf'),
@@ -53,8 +53,9 @@ def matchcell(item, match_lists):
 
         
 class SearchMethods (object):
-    def __init__(self):
+    def __init__(self, present_mode = 'popover'):
         self.sender = None
+        self.present_mode = present_mode
         
     def filter_shared(self, items):
         results = []
@@ -76,7 +77,11 @@ class SearchMethods (object):
         self.view['Filter'].action = self.do_search
         self.view['results'].delegate = self.CopyDelegate()
         self.sender = sender
-        self.view.present('popover', popover_location = sender.center.as_tuple())
+        if sender:
+            popover_location = sender.center.as_tuple()
+        else:
+            popover_location = (0,0)
+        self.view.present(self.present_mode, popover_location = popover_location)
         
     def do_search(self, sender):
         if self.view['shared_only'].value:
@@ -424,13 +429,19 @@ def reload_data(sender, response='Reloaded'):
     sender.enabled = True
 
 
-def run():
+def run(search_only=False):
     config_handler()
     global frameworks
     if 'debug' in argv:
         global v
     if 'noui' in argv:
         frameworks = AllFrameworksDataSource(get_frameworks())
+        return
+    if search_only:
+        frameworks = AllFrameworksDataSource(get_frameworks())
+        search = SearchMethods('panel')
+        search.started_handler(None)
+        search.view.autoresizing = 'wh'
         return
     
     v = ui.load_view('objc_browser')

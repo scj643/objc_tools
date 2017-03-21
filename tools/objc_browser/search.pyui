@@ -26,7 +26,7 @@
           "row_height" : 44,
           "class" : "TableView",
           "name" : "results",
-          "flex" : "HRB"
+          "flex" : "WHRB"
         }
       },
       {
@@ -38,6 +38,7 @@
         ],
         "attributes" : {
           "uuid" : "D9E6B672-3E01-45AD-978D-2A25D4B9E691",
+          "flex" : "WR",
           "spellchecking_type" : "no",
           "background_color" : "RGBA(0.937255,0.937255,0.956863,1.000000)",
           "frame" : "{{250, 254}, {200, 32}}",
@@ -59,11 +60,12 @@
 
         ],
         "attributes" : {
+          "uuid" : "7E214D19-59B7-48C4-96C0-4ABD0AFCA0B9",
           "frame" : "{{254, 264}, {51, 31}}",
           "value" : false,
           "class" : "Switch",
           "name" : "shared_only",
-          "uuid" : "7E214D19-59B7-48C4-96C0-4ABD0AFCA0B9"
+          "flex" : "LB"
         }
       },
       {
@@ -74,6 +76,7 @@
 
         ],
         "attributes" : {
+          "flex" : "LB",
           "font_name" : "<System>",
           "frame" : "{{189, 261}, {150, 32}}",
           "uuid" : "C1DE7097-A344-4EBE-90BE-B274EBA6643C",
