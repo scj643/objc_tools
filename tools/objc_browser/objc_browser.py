@@ -8,7 +8,7 @@ import re
 from sys import argv
 import json
 import os
-
+                
 
 def config_handler():
     global objc_browser_conf
@@ -49,6 +49,87 @@ def matchcell(item, match_lists):
         if res:
             return i[1]
     return 'white'
+
+        
+class SearchMethods (object):
+    def __init__(self):
+        self.sender = None
+    
+    def started_handler(self, sender):
+        # Needed incase the view is dismissed
+        self.view = ui.load_view('search')
+        self.view['Search'].action = self.do_search
+        self.view['Filter'].clear_button_mode = 'always'
+        self.view['Filter'].action = self.do_search
+        self.view['results'].delegate = self.CopyDelegate()
+        self.sender = sender
+        self.view.present('popover', popover_location = sender.center.as_tuple())
+        
+    def do_search(self, sender):
+        self.view['results'].data_source = FrameworkSearchDataSource(self.search(self.view['Filter'].text))
+        self.view['results'].reload()
+        
+    def search(self, query):
+        q = re.compile(query)
+        results = []
+        for k, v in frameworks.fworks['frameworks'].items():
+            bresult = {'bundle': v['bundle'], 'items': []}
+            for i in v['items']:
+                if q.match(i):
+                    bresult['items'] += [i]
+            if bresult['items']:
+                results += [bresult]
+        return results
+        
+    class CopyDelegate (object):
+        def tableview_did_select(self, tableview, section, row):
+            tableview.selected_row = -1
+            clipboard.set(tableview.data_source.items[section]['items'][row])
+            dialogs.hud_alert('copied')
+    
+        def tableview_accessory_button_tapped(self, tableview, section, row, **kwargs):
+            t = ui.TableView()
+            v = ui.NavigationView(t)
+            v.name = tableview.data_source.items[section]['items'][row]
+            t.data_source = ClassBrowserController(v.name)
+            t.delegate = SuperClassDelegate()
+            v.autoresizing = 'wh'
+            t.reload()
+            if ui.get_window_size().width <= 320:
+                v.present('full_screen')
+            else:
+                v.width = 600
+                v.height = 800
+                v.flex = 'HR'
+                v.present('popover', popover_location=(0, 0))
+        
+    
+class FrameworkSearchDataSource (object):
+    '''Pass the items from frameworks_search
+    >>> d = SearchMethods.search('*.AV')
+    '''
+    def __init__(self, result):
+        self.items = result
+
+    def tableview_did_select(self, tableview, section, row):
+        pass
+
+    def tableview_number_of_sections(self, tableview):
+        return len(self.items)
+
+    def tableview_number_of_rows(self, tableview, section):
+        return len(self.items[section]['items'])
+
+    def tableview_cell_for_row(self, tableview, section, row):
+        cell = ui.TableViewCell()
+        cell.text_label.text = self.items[section]['items'][row]
+        l = class_objects(self.items[section]['items'][row], False)[0][1]
+        cell.background_color = matchcell(l, objc_browser_conf['FrameworkClassesHighlight'])
+        cell.accessory_type = 'detail_disclosure_button'
+        return cell
+
+    def tableview_title_for_header(self, tableview, section):
+        return self.items[section]['bundle'].bundleID
 
 
 def class_objects(cla='', alloc=True):
@@ -166,7 +247,29 @@ class FrameworkClassesDataSource(object):
         return cell
 
     def tableview_title_for_header(self, tableview, section):
-        return self.name
+        return self.items[section]
+
+
+class FrameworkClassesDelegate (object):
+    def tableview_did_select(self, tableview, section, row):
+        obj = tableview.data_source.fworks['frameworks'][tableview.data_source.fworks['flist'][row]]
+        tableview.superview.superview['selected'].data_source = FrameworkClassesDataSource(obj)
+        tableview.superview.superview['selected'].reload()
+
+    def tableview_accessory_button_tapped(self, tableview, section, row, **kwargs):
+        obj = tableview.data_source.fworks['frameworks'][tableview.data_source.fworks['flist'][row]]
+        v = ui.TableView()
+        v.row_height = 120
+        v.name = '{} Info'.format(tableview.data_source.fworks['flist'][row].split('.')[-1])
+        v.data_source = BundleInfoDataSource(obj)
+        v.autoresizing = 'wh'
+        v.reload()
+        if ui.get_window_size().width <= 320:
+            v.present('full_screen')
+        else:
+            v.width = 300
+            v.height = 200
+            v.present('popover')
 
 
 class CopyDelegate (object):
@@ -234,7 +337,7 @@ class ClassBrowserController(object):
         return self.obs[section][0]
 
 
-class InfoDataSource (object):
+class BundleInfoDataSource (object):
     def __init__(self, obj):
         self.binfo = obj['bundle']
         self.items = ['Path: {}'.format(self.binfo.path), 'Type: {}'.format(self.binfo.extensionType)]
@@ -257,28 +360,6 @@ class InfoDataSource (object):
         cell.text_label.number_of_lines = 0
         cell.text_label.line_break_mode = ui.LB_WORD_WRAP
         return cell
-
-
-class FrameworkClassesDelegate (object):
-    def tableview_did_select(self, tableview, section, row):
-        obj = tableview.data_source.fworks['frameworks'][tableview.data_source.fworks['flist'][row]]
-        tableview.superview.superview['selected'].data_source = FrameworkClassesDataSource(obj)
-        tableview.superview.superview['selected'].reload()
-
-    def tableview_accessory_button_tapped(self, tableview, section, row, **kwargs):
-        obj = tableview.data_source.fworks['frameworks'][tableview.data_source.fworks['flist'][row]]
-        v = ui.TableView()
-        v.row_height = 120
-        v.name = '{} Info'.format(tableview.data_source.fworks['flist'][row].split('.')[-1])
-        v.data_source = InfoDataSource(obj)
-        v.autoresizing = 'wh'
-        v.reload()
-        if ui.get_window_size().width <= 320:
-            v.present('full_screen')
-        else:
-            v.width = 300
-            v.height = 200
-            v.present('popover')
 
 
 class AllFrameworksDataSource(object):
@@ -315,7 +396,7 @@ def reload_data(sender, response='Reloaded'):
     sender.superview['fwcontainer']['activity'].start()
     sender.enabled = False
     frameworks.fworks = get_frameworks()
-    sender.superview['fwcontainer']['classes'].reload()
+    sender.superview['fwcontainer']['bundles'].reload()
     sender.superview['fwcontainer']['activity'].stop()
     dialogs.hud_alert('Reloaded')
     sender.enabled = True
@@ -332,13 +413,15 @@ def run():
     a.name = 'activity'
     v['fwcontainer'].add_subview(a)
     v['fwcontainer']['activity'].center = v['fwcontainer'].center
-    v['fwcontainer']['classes'].delegate = FrameworkClassesDelegate()
+    v['fwcontainer']['bundles'].delegate = FrameworkClassesDelegate()
     v['selected'].delegate = CopyDelegate()
     v.present('panel')
     v['reload'].enabled = False
     frameworks = AllFrameworksDataSource(get_frameworks())
-    v['fwcontainer']['classes'].data_source = frameworks
+    v['fwcontainer']['bundles'].data_source = frameworks
     reload_data(v['reload'], "Loaded")
+    search = SearchMethods()
+    v['search'].action = search.started_handler
 
     # v['classes'].reload()
 

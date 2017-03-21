@@ -1,0 +1,82 @@
+[
+  {
+    "selected" : false,
+    "frame" : "{{0, 0}, {459, 550}}",
+    "class" : "View",
+    "nodes" : [
+      {
+        "selected" : false,
+        "frame" : "{{6, 58}, {440, 476}}",
+        "class" : "TableView",
+        "nodes" : [
+
+        ],
+        "attributes" : {
+          "uuid" : "61FF2E18-AB1F-4936-B4E9-4AB501FFC34E",
+          "corner_radius" : 0,
+          "content_height" : 569,
+          "frame" : "{{0, 185}, {200, 200}}",
+          "data_source_items" : "",
+          "data_source_number_of_lines" : 1,
+          "border_width" : 0,
+          "content_width" : 200,
+          "background_color" : "RGBA(0.937255,0.937255,0.956863,1.000000)",
+          "data_source_delete_enabled" : false,
+          "data_source_font_size" : 18,
+          "row_height" : 44,
+          "class" : "TableView",
+          "name" : "results",
+          "flex" : "HRB"
+        }
+      },
+      {
+        "selected" : true,
+        "frame" : "{{6, 6}, {390, 44}}",
+        "class" : "TextField",
+        "nodes" : [
+
+        ],
+        "attributes" : {
+          "uuid" : "D9E6B672-3E01-45AD-978D-2A25D4B9E691",
+          "font_size" : 17,
+          "background_color" : "RGBA(0.937255,0.937255,0.956863,1.000000)",
+          "frame" : "{{250, 254}, {200, 32}}",
+          "alignment" : "left",
+          "autocorrection_type" : "no",
+          "placeholder" : "Search",
+          "font_name" : "<System>",
+          "spellchecking_type" : "no",
+          "class" : "TextField",
+          "name" : "Filter",
+          "row_height" : 44
+        }
+      },
+      {
+        "selected" : false,
+        "frame" : "{{404, 6}, {42, 44}}",
+        "class" : "Button",
+        "nodes" : [
+
+        ],
+        "attributes" : {
+          "font_size" : 15,
+          "frame" : "{{310, 254}, {80, 32}}",
+          "title" : "Search",
+          "class" : "Button",
+          "background_color" : "RGBA(0.937255,0.937255,0.956863,1.000000)",
+          "uuid" : "203EDCBA-F788-4902-91E6-F2BAC3B2C976",
+          "name" : "Search",
+          "image_name" : "iob:ios7_search_strong_256"
+        }
+      }
+    ],
+    "attributes" : {
+      "tint_color" : "RGBA(0.000000,0.478000,1.000000,1.000000)",
+      "enabled" : true,
+      "border_color" : "RGBA(0.000000,0.000000,0.000000,1.000000)",
+      "background_color" : "RGBA(1.000000,1.000000,1.000000,1.000000)",
+      "name" : "Frameworks",
+      "flex" : ""
+    }
+  }
+]
