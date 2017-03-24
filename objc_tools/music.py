@@ -20,27 +20,27 @@ MPMediaItem = ObjCClass('MPMediaItem')
 
 
 class RepeatMode (IntEnum):
-    Default = 0
+    default = 0
     # We use lowercase none to seperate it from the keyword None
     none = 1
-    One = 2
-    All = 3
+    one = 2
+    all = 3
         
 
 class ShuffleMode (IntEnum):
-    Default = 0
-    Off = 1
-    Songs = 2
-    Albums = 3
+    default = 0
+    off = 1
+    songs = 2
+    albums = 3
     
 
 class PlaybackState (IntEnum):
-    Stopped = 0
-    Playing = 1
-    Paused = 2
-    Interrupted = 3
-    SeekingForward = 4
-    SeekingBackward = 5
+    stoped = 0
+    playing = 1
+    paused = 2
+    interrupted = 3
+    seekingForward = 4
+    seekingBackward = 5
 
 
 class FileDesc (object):
@@ -308,7 +308,7 @@ class NowPlayingController (object):
         
     def play_pause(self):
         """Toggles playback state of the music app"""
-        if self.state == PlaybackState.Playing:
+        if self.state == PlaybackState.playing:
             self._objc.pause()
         else:
             self._objc.play()
