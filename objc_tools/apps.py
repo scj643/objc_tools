@@ -13,8 +13,8 @@ _timediff = 978307200
 
 class AppType (IntEnum):
     '''Used to bridge with the numerical version'''
-    System = 1
-    User = 0
+    system = 1
+    user = 0
     
 class App (object):
     def __init__(self, app):

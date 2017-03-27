@@ -50,6 +50,10 @@ MRMediaRemoteRegisterForNowPlayingNotifications.argtypes = []
 MRMediaRemoteCopyPickableRoutes = c.MRMediaRemoteCopyPickableRoutes
 MRMediaRemoteCopyPickableRoutes.restype = c_void_p
 
+MRMediaRemoteRegisterForNowPlayingNotifications = c.MRMediaRemoteRegisterForNowPlayingNotifications
+MRMediaRemoteRegisterForNowPlayingNotifications.argtypes = [c_void_p]
+MRMediaRemoteRegisterForNowPlayingNotifications.restype = None
+
 q=dispatch.dispatch_get_global_queue(0, 0)
 
 
