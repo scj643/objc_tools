@@ -1,0 +1,126 @@
+>>> v = Scene()
+>>> v.node._objc.transform(argtypes = [], restype = SCNMatrix4)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> from objc_util import cx
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'cx'
+>>> from objc_util import c
+>>> SCNMatrix4IsIdentity = c.SCNMatrix4IsIdentity
+>>> SCNMatrix4IsIdentity.argtypes
+>>> SCNMatrix4IsIdentity.argtypes = [SCNMatrix4]
+>>> SCNMatrix4IsIdentity(v.node._objc.transform(argtypes = [], restype = SCNMatrix4))
+1
+>>> SCNMatrix4MakeTranslation = c.SCNMatrix4MakeTranslation
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/var/containers/Bundle/Application/A7AEB838-0F10-4AF1-AFCC-9A1FBAD1B1EF/Pythonista3.app/Frameworks/Py3Kit.framework/pylib/ctypes/__init__.py", line 362, in __getattr__
+    func = self.__getitem__(name)
+  File "/var/containers/Bundle/Application/A7AEB838-0F10-4AF1-AFCC-9A1FBAD1B1EF/Pythonista3.app/Frameworks/Py3Kit.framework/pylib/ctypes/__init__.py", line 367, in __getitem__
+    func = self._FuncPtr((name_or_ordinal, self))
+AttributeError: dlsym(RTLD_DEFAULT, SCNMatrix4MakeTranslation): symbol not found
+>>> SCNMatrix4MakeRotation = c.SCNMatrix4MakeRotation
+>>> from objc_util import c_float
+>>> SCNMatrix4MakeRotation.argtypes = [c_float, c_float, c_float, c_float]
+>>> SCNMatrix4MakeRotation.restype = SCNMatrix4
+>>> SCNMatrix4MakeRotation(10, 0, 0, 0)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4MakeRotation(10, 0, 1, 0)
+<SCNMatrix4: <Matrix:
+[[-0.83907151222229, 0.0, 0.5440211296081543, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [-0.5440211296081543, 0.0, -0.83907151222229, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> from math import pi
+>>> SCNMatrix4MakeRotation(pi/2, 0, 0, 0)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4MakeRotation(pi/3, 0, 0, 0)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4MakeRotation(pi/3, 1, 1, 1)
+<SCNMatrix4: <Matrix:
+[[0.6666666269302368, 0.6666666865348816, -0.3333333432674408, 0.0],
+ [-0.3333333432674408, 0.6666666269302368, 0.6666666865348816, 0.0],
+ [0.6666666865348816, -0.3333333432674408, 0.6666666269302368, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Scale = c.SCNMatrix4Scale
+>>> SCNMatrix4Scale.argtypes = [SCNMatrix4, c_float, c_float, c_float]
+>>> m=SCNMatrix4MakeRotation(pi/3, 0, 0, 0)
+>>> m
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Rotate = c.SCNMatrix4Rotate
+>>> SCNMatrix4Rotate.argtypes = [SCNMatrix4, c_float, c_float, c_float]
+>>> SCNMatrix4Rotate.restype = SCNMatrix4
+>>> m
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Rotate.argtypes = [SCNMatrix4, c_float, c_float, c_float, c_float]
+>>> SCNMatrix4Rotate(m, pi/4, 0, 0, 0)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Rotate(m, pi/2, 0, 0, 0)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Rotate(m, pi/2, 1, 0, 0)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, -4.371138828673793e-08, 1.0, 0.0],
+ [0.0, -1.0, -4.371138828673793e-08, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Invert = c.SCNMatrix4Invert
+>>> SCNMatrix4Invert.argtypes = [SCNMatrix4]
+>>> SCNMatrix4Invert.restype = SCNMatrix4
+>>> SCNMatrix4Invert(m)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> SCNMatrix4Invert(m)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, 1.0, 0.0, 0.0],
+ [0.0, 0.0, 1.0, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> r=SCNMatrix4Rotate(m, pi/2, 1, 0, 0)
+>>> SCNMatrix4Invert(r)
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [-0.0, -4.371138828673793e-08, -1.0, -0.0],
+ [0.0, 1.0, -4.371138828673793e-08, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+>>> r
+<SCNMatrix4: <Matrix:
+[[1.0, 0.0, 0.0, 0.0],
+ [0.0, -4.371138828673793e-08, 1.0, 0.0],
+ [0.0, -1.0, -4.371138828673793e-08, 0.0],
+ [0.0, 0.0, 0.0, 1.0]]>>
+
