@@ -1,9 +1,12 @@
 from objc_util import Structure, c_float, c, c_bool
 from pprint import pformat
+from objc_util import type_encodings
+from objc_tools.structs import Encodings
+
 
 class Vector3 (Structure):
     _fields_ = [('x', c_float), ('y', c_float), ('z', c_float)]
-    
+    type_encoding = 'SCNVector3'
     def __eq__(self, other):
         SCNVector3EqualToVector3 = c.SCNVector3EqualToVector3
         SCNVector3EqualToVector3.argtypes = [Vector3, Vector3]
@@ -16,23 +19,23 @@ class Vector3 (Structure):
     
 class Vector4 (Structure):
     _fields_ = [('x', c_float), ('y', c_float), ('z', c_float), ('w', c_float)]
-    
+    type_encoding = 'SCNVector4'
     def __eq__(self, other):
         SCNVector4EqualToVector4 = c.SCNVector4EqualToVector4
         SCNVector4EqualToVector4.argtypes = [Vector4, Vector4]
         SCNVector4EqualToVector4.restype = c_bool
-        return SCNVector4EqualToVector4(self, other)
-        
+        return SCNVector4EqualToVector4(self, other)       
         
     def __repr__(self):
         return '<Vector3: <x: {}, y: {}, z: {}, w: {}>>'.format(self.x, self.y, self.z, self.w)
+
 
 class Matrix4 (Structure):
     _fields_ = [('m1_1', c_float), ('m1_2', c_float), ('m1_3', c_float), ('m1_4', c_float),
                 ('m2_1', c_float), ('m2_2', c_float), ('m2_3', c_float), ('m2_4', c_float),
                 ('m3_1', c_float), ('m3_2', c_float), ('m3_3', c_float), ('m3_4', c_float),
                 ('m4_1', c_float), ('m4_2', c_float), ('m4_3', c_float), ('m4_4', c_float)]
-                
+    type_encoding = 'SCNMatrix4'
     def matrix_list(self):
         return [[self.m1_1, self.m1_2, self.m1_3, self.m1_4],
                 [self.m2_1, self.m2_2, self.m2_3, self.m2_4],
@@ -106,8 +109,11 @@ def matrix_from_list(matrix = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 
         args += i
     return Matrix4(*args)
     
-        
 
-if __name__ == '__main__':
-    m = matrix_from_list()
-    m.scale(2,2,2, keep=True)
+e = Encodings(type_encodings)
+for i in [Vector3, Vector4, Matrix4]:
+    e.add_structure(i)
+
+e.update_encodings()
+
+

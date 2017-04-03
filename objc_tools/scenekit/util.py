@@ -5,7 +5,7 @@ from pprint import pformat
 
 SUPPORTED_FORMATS = re.compile('dae|scn', re.I)
 
-class Light (object):
+class LightType (object):
     Ambient = 'SCNLightTypeAmbient'
     Omni = 'SCNLightTypeOmni'
     Directonal = 'SCNLightTypeDirectional'
@@ -14,31 +14,31 @@ class Light (object):
     Probe = 'SCNLightTypeProbe'
     
 
-class SCNShadowMode (IntEnum):
+class ShadowMode (IntEnum):
     '''See apple documentation'''
     forward = 0
     deferred = 1
     modulated = 2
 
 
-class SCNGeometryPrimitiveType (IntEnum):
+class GeometryPrimitiveType (IntEnum):
     triangles = 0
     triangleStrip = 1
     line = 2
     point = 3
 
 
-class SCNCullMode (IntEnum):
+class CullMode (IntEnum):
     back = 0
     front = 1
     
 
-class SCNTransparencyMode (IntEnum):
+class TransparencyMode (IntEnum):
     AOne = 0
     RGBZero = 1
 
 
-class SCNBlendMode (IntEnum):
+class BlendMode (IntEnum):
     alpha = 0 # Blends the source and destination colors by adding the source multiplied by source alpha and the destination multiplied by one minus source alpha.
     add = 1 # Blends the source and destination colors by adding them up.
     subtract = 2 # Blends the source and destination colors by subtracting the source from the destination.
@@ -47,12 +47,12 @@ class SCNBlendMode (IntEnum):
     replace = 5 #Replaces the destination with the source (ignores alpha).
 
 
-class SCNFilterMode (IntEnum):
+class FilterMode (IntEnum):
     none = 0
     nearest = 1
     linear = 2
 
-class SCNWrapMode (IntEnum):
+class WrapMode (IntEnum):
     clamp = 1
     repeat = 2
     clampToBorder = 3
@@ -68,6 +68,7 @@ class SCNPhysicsBodyType (IntEnum):
     static = 0
     dynamic = 1
     kinematic = 2
+
     
 class SCNPhysicsCollisionCategory (Flag):
     default = 1 << 0 # default collision group for dynamic and kinematic objects
@@ -75,7 +76,7 @@ class SCNPhysicsCollisionCategory (Flag):
     all = 0 # default for collision mask
 
 
-class SCNPhysicsFieldScope (IntEnum):
+class PhysicsFieldScope (IntEnum):
     '''
     Specifies the domain of influence of a physics field.
     '''
@@ -83,7 +84,7 @@ class SCNPhysicsFieldScope (IntEnum):
     outsideExtent = 1
 
 
-class SCNReferenceLoadingPolicy (IntEnum):
+class ReferenceLoadingPolicy (IntEnum):
     '''
     Controls whenever to load the reference node
     '''
@@ -91,13 +92,13 @@ class SCNReferenceLoadingPolicy (IntEnum):
     onDemand = 1
 
 
-class SCNAntialiasingMode (IntEnum):
+class AntialiasingMode (IntEnum):
     none = 0
     multisampling2X = 1
     multisampling4X = 2
 
 
-class SCNDebugOptions (Flag):
+class DebugOptions (Flag):
     none = 0
     showPhysicsShapes = 1 << 0
     showBoundingBoxes = 1 << 1
@@ -107,4 +108,5 @@ class SCNDebugOptions (Flag):
     showWireframe = 1 << 5
 
 
-
+class Vector3objc (object):
+    ''''''

@@ -1,6 +1,7 @@
 from objc_util import ObjCClass, load_framework, nsurl
 from objc_tools.scenekit.util import SUPPORTED_FORMATS
 from objc_tools.scenekit.structures import Vector3, Vector4, Matrix4
+from objc_tools.scenekit.node import Node
 load_framework('SceneKit')
 load_framework('SpriteKit')
 
@@ -89,14 +90,4 @@ class Scene (object):
         return '<Scene <Framerate: {}, node: {}>>'.format(self.framerate, self.node)
 
 
-class Node (object):
-    def __init__(self, node = SCNNode.node()):
-        self._objc = node
-        
-    @property
-    def name(self):
-        return str(self._objc.name())
-        
-    @name.setter
-    def name(self, value):
-        self._objc.setName_(value)
+

@@ -1,5 +1,6 @@
 from objc_util import load_framework, ObjCClass, ObjCInstance
 from objc_tools.scenekit.sk_scene import Scene
+from objc_tools.scenekit.node import *
 import ui
 
 load_framework('SceneKit')
