@@ -76,6 +76,21 @@ class Matrix4 (Structure):
         new.m4_3 += tz
         return new
         
+    def scale(self, sx, sy, sz):
+        new = matrix_from_list(self.matrix_list())
+        new.m1_1 += sx
+        new.m2_2 += sy
+        new.m3_3 += sz
+        return new
+        
+    def rotate (self, angle, x, y, z):
+        '''rotate
+        Returns a matrix/4 that rotates by an angle in radians about the vector x, y, z'''
+        c.SCNMatrix4MakeRotation
+        c.SCNMatrix4MakeRotation.argtypes = [Matrix4, c_float, c_float, c_float, c_float]
+        c.SCNMatrix4MakeRotation.restype = Matrix4
+        return c.SCNMatrix4MakeRotation(self, angle, x, y, z)
+        
     def is_identity(self):
         SCNMatrix4IsIdentity = c.SCNMatrix4IsIdentity
         SCNMatrix4IsIdentity.argtypes = [Matrix4]

@@ -6,13 +6,19 @@ from pprint import pformat
 SUPPORTED_FORMATS = re.compile('dae|scn', re.I)
 
 class LightType (object):
-    Ambient = 'SCNLightTypeAmbient'
-    Omni = 'SCNLightTypeOmni'
-    Directonal = 'SCNLightTypeDirectional'
-    Spot = 'SCNLightTypeSpot'
-    IES = 'SCNLightTypeIES'
-    Probe = 'SCNLightTypeProbe'
-    
+    Ambient = 'ambient'
+    Omni = 'omni'
+    Directonal = 'directional'
+    Spot = 'spot'
+    IES = 'IES'
+    Probe = 'probe'
+
+
+class LightingModel (object):
+    Phong = 'SCNLightingModelPhong'
+    Lambert = 'SCNLightingModelLambert'
+    Constant = 'SCNLightingModelConstant'
+    PhysicallyBased = 'SCNLightingModelPhysicallyBased'
 
 class ShadowMode (IntEnum):
     '''See apple documentation'''
@@ -108,5 +114,8 @@ class DebugOptions (Flag):
     showWireframe = 1 << 5
 
 
-class Vector3objc (object):
-    ''''''
+class RenderingAPI (IntEnum):
+    metal = 0
+    openGLES2 = 1
+
+
