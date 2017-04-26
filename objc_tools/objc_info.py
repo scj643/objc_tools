@@ -72,6 +72,25 @@ class ObjCClassInfo(object):
             self.shared_init = True
         else:
             self.shared_init = False
+    
+    @property
+    def superclass(self):
+        if 'superclass' in self.initializers:
+            if ObjCClass(self.name).superclass():
+                return ObjCClassInfo(ObjCInstance(ObjCClass(self.name).superclass()))
+            else:
+                return None
+        else:
+            return None
+            
+    @property
+    def class_depth(self):
+        steps = 1
+        parent = self.superclass
+        while parent:
+            parent = parent.superclass
+            steps += 1
+        return steps-1
 
     def __repr__(self):
         return '<ObjCClassInfo: {} <sharedInit: {}, defaultInit: {}>'.format(
@@ -100,5 +119,7 @@ def get_classes_for_bundle(bundle, regex=True, class_imfo=True):
 
 
 if __name__ == '__main__':
-    s = get_classes_for_bundle('.*UIKit.*')
+    from pprint import pprint as p
+    s = get_classes_for_bundle('.*omz.*')
+    shared = [i for i in s if i.shared_init]
 
