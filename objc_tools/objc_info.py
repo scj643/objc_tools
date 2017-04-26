@@ -40,6 +40,9 @@ def class_objects(cla='', alloc=True):
             if '.' not in py_method_name:
                 py_methods.append(py_method_name)
         free(method_list_ptr)
+    if not alloc:
+        py_methods = []
+        functions = []
     functions = [x for x in py_methods if x not in initializers]
     return {
         'Initializers': initializers,
@@ -49,55 +52,97 @@ def class_objects(cla='', alloc=True):
 
 
 class ObjCClassInfo(object):
-    def __init__(self, cls):
+    def __init__(self, cls, alloc = True):
         if isinstance(cls, (ObjCClass)):
             self.name = cls.class_name.decode('utf-8')
         if isinstance(cls, (ObjCInstance)):
             self.name = cls._get_objc_classname().decode('utf-8')
         if isinstance(cls, (str)):
             self.name = cls
-        objects = class_objects(self.name)
-
-        self.methods = objects['Methods']
+        objects = class_objects(self.name, alloc)
+        if alloc:
+            self.get_methods()
+        else:
+            self.nethods = []
         self.initializers = objects['Initializers']
         if bundles.bundleForClass(self.name):
             self.bundleID = bundles.bundleForClass(self.name).bundleID
         else:
             self.bundleID = None
-        if [i for i in self.initializers if re.search('default', i, re.I)]:
-            self.default_init = True
-        else:
-            self.default_init = False
-        if [i for i in self.initializers if re.search('shared', i, re.I)]:
-            self.shared_init = True
-        else:
-            self.shared_init = False
+        self.alloc = alloc
     
-    @property
-    def superclass(self):
+    def get_methods(self):
+        self.methods = class_objects(self.name)['Methods']
+
+    def superclass(self, alloc = False):
         if 'superclass' in self.initializers:
             if ObjCClass(self.name).superclass():
-                return ObjCClassInfo(ObjCInstance(ObjCClass(self.name).superclass()))
+                return ObjCClassInfo(
+                    ObjCInstance(ObjCClass(self.name).superclass()), alloc)
             else:
                 return None
         else:
             return None
-            
+
     @property
     def class_depth(self):
-        steps = 1
-        parent = self.superclass
+        steps = 0
+        parent = self.superclass()
         while parent:
-            parent = parent.superclass
+            parent = parent.superclass()
             steps += 1
-        return steps-1
+        return steps - 1
+
+    def get_class_at_depth(self, value):
+        if value > self.class_depth:
+            raise ValueError('Class_depth too big')
+        current_depth = 0
+        current_class = self.superclass
+        while current_depth != class_depth:
+            current_class = current_class.superclass
+            current_depth += 1
+
+    def inhereted_methods(self):
+        items = []
+        parent = self.superclass()
+        while parent:
+            items += [i for i in parent.methods if i not in items]
+            parent = parent.superclass()
+        return items
+        
+    def inhereted_initalizers(self):
+        items = []
+        parent = self.superclass(False)
+        while parent:
+            items += [i for i in parent.initializers if i not in items]
+            parent = parent.superclass(False)
+        return items
+
+    def objc_class(self):
+        return ObjCClass(self.name)
+
+    def shared_init(self):
+        shared = [i for i in self.initializers if re.search('shared', i, re.I)]
+        if shared:
+            return shared
+        else:
+            return None
+
+    def default_init(self):
+        default = [
+            i for i in self.initializers if re.search('default', i, re.I)
+        ]
+        if default:
+            return default
+        else:
+            return None
 
     def __repr__(self):
         return '<ObjCClassInfo: {} <sharedInit: {}, defaultInit: {}>'.format(
-            self.name, self.shared_init, self.default_init)
+            self.name, bool(self.shared_init()), bool(self.default_init()))
 
 
-def get_classes_for_bundle(bundle, regex=True, class_imfo=True):
+def get_classes_for_bundle(bundle, regex=True, class_imfo=True, alloc = False):
     results = []
     if isinstance(bundle, (str)) and regex:
         search = re.compile(bundle)
@@ -111,15 +156,33 @@ def get_classes_for_bundle(bundle, regex=True, class_imfo=True):
                         results += [i]
             else:
                 if isinstance(bundles.bundleForClass(i).bundleID, (str)):
-                    if bundles.bundleForClass(i).bundleID.find(bundle) != -1:
+                    if bundle in bundles.bundleForClass(i).bundleID:
                         results += [i]
     if class_imfo:
         results = [ObjCClassInfo(i) for i in results]
     return results
 
 
+def stat_dict(info_list, ignore_inheretence=False):
+    # ignoring inheretence is very time consuming
+    all_init = {}
+    for i in info_list:
+        for g in i.initializers:
+                if ignore_inheretence and g in i.inhereted_initalizers():
+                    pass
+                else:
+                    if g in all_init.keys():
+                        all_init[g] += [i]
+                    else:
+                        all_init[g] = [i]
+    return all_init
+    
+    
 if __name__ == '__main__':
     from pprint import pprint as p
-    s = get_classes_for_bundle('.*omz.*')
-    shared = [i for i in s if i.shared_init]
-
+    from objc_util import load_framework
+    from timeit import timeit
+    load_framework('SceneKit')
+    #s = get_classes_for_bundle('.*UIKit.*')
+    #print('got classes')
+    #d = stat_dict(s, True)
