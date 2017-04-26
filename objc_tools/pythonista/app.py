@@ -10,13 +10,11 @@ class UIUserNotificationType (Flag):
     
             
 class UIBackgroundRefreshStatus (IntEnum):
-    
     UIBackgroundRefreshStatusRestricted = 0
-    
     UIBackgroundRefreshStatusDenied = 1
-    
     UIBackgroundRefreshStatusAvailable = 2
-  
+
+
 class UIApplicationState (IntEnum):
     UIApplicationStateActive = 0
     UIApplicationStateInactive = 1
@@ -54,7 +52,7 @@ class UIApp (object):
            Not setable'''
         bgtime = self._objc.backgroundTimeRemaining()
         if bgtime > 10000000:
-            return None
+            return -1
         else:
             return bgtime
     
@@ -84,7 +82,22 @@ class UIApp (object):
     def registered_for_remote_notifications(self):
         return self._objc.isRegisteredForRemoteNotifications()
         
-    
+
+class RootView (object):
+    def __init__(self):
+        self._objc = UIApplication.sharedApplication().keyWindow().rootViewController().view()
+        for i in self._objc.gestureRecognizers():
+            if b'UIPanGestureRecognizer' == i._get_objc_classname():
+                self._slide_gesture = i
+        
+    @property
+    def sliding_gesture_enabled(self):
+        return self._slide_gesture.isEnabled()
+        
+    @sliding_gesture_enabled
+    def sliding_gesture_enabled(self, value):
+        self._slide_gesture.setEnabled_(value)
+
 if __name__ == '__main__':
     p = UIApp()
     o = p._objc

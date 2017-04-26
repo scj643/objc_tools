@@ -1,6 +1,7 @@
 from ctypes import Structure, c_int32, c_int64, c_uint32, c_double
-from objc_util import c
+from objc_util import c, type_encodings
 from objc_tools.backports.enum_backport import Flag
+from objc_tools.structs import Encodings
 
 class CMTimeFlags (Flag):
     Valid = 1<<0
@@ -14,12 +15,11 @@ class CMTime (Structure):
     '''A Handler for CMTime Structures
     DO NOT CALL DIRECTLY use CMTimeMake
     '''
-    
     _fields_ = [('CMTimeValue', c_int64),
                 ('CMTimeScale', c_int32),
                 ('CMTimeFlags', c_uint32),
                 ('CMTimeEpoch', c_int64)]
-    
+    type_encoding = 'CMTime'
     @property
     def seconds(self):
         '''Return the object as seconds'''
@@ -89,7 +89,9 @@ class CMTime (Structure):
         else:
             return False
         
-                
+e = Encodings(type_encodings)
+e.add_structure(CMTime)
+
 def CMTimeMake(value, scale = 90000):
     '''Make a CMTime
        :param value: The numerator of the resulting CMTime.
@@ -111,6 +113,8 @@ def CMTimeMakeWithSeconds(seconds, scale = 90000):
     CMTimeMakeWithSeconds.argtypes = [c_double, c_int32]
     CMTimeMakeWithSeconds.restype = CMTime
     return CMTimeMakeWithSeconds(seconds, scale)
+
+
 
 CMTimeMultiplyByFloat64 = c.CMTimeMultiplyByFloat64
 CMTimeMultiplyByFloat64.argtypes = [CMTime, c_double]

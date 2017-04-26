@@ -1,4 +1,4 @@
-from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, on_main_thread, ns, create_objc_class, UIApplication, UIColor
+from objc_util import ObjCClass, load_framework, nsurl, ObjCInstance, on_main_thread, ns, create_objc_class, UIApplication, UIColor, CGSize
 from objc_tools.scenekit.util import SUPPORTED_FORMATS, LightType, ShadowMode, DebugOptions, RenderingAPI, LightingModel
 from objc_tools.scenekit.structures import Vector3, Vector4, Matrix4
 from objc_tools.ui.editorview import TabView, tabVC
@@ -16,6 +16,7 @@ SCNLight = ObjCClass('SCNLight')
 SCNView = ObjCClass('SCNView')
 SCNCamera = ObjCClass('SCNCamera')
 UIViewController = ObjCClass('UIViewController')
+SCNMaterial = ObjCClass('SCNMaterial')
 
         
 class SKView (object):
@@ -161,7 +162,7 @@ class SceneTab (SceneView, TabView):
 class Scene (object):
     def __init__(self, scene = None):
         if scene:
-            self._objc = scene
+            self._objc = objc
         else:
             self._objc = SCNScene.scene()
         self._node_ref = Node(self._objc.root())
@@ -231,11 +232,12 @@ class Scene (object):
     def removeAllParticleSystems(self):
         self._objc.removeAllParticleSystems()
         
-    def save_to_file(self, path):
+    def save_to_file(self, file_name):
         if SUPPORTED_FORMATS.match(path.rsplit('.', 1)[-1]):
             options = ns({'SCNSceneExportDestinationURL': nsurl(path)})
-            url = nsurl(path)
-            self._objc.writeToURL_options_(url, options)
+            file = nsurl(file_name)
+            
+            return self._objc.writeToURL_options_(url, options)
         else:
             raise TypeError('Not a supported export type')
             
@@ -251,12 +253,12 @@ class Node (object):
         self._child_ref = []
         if objc:
             self._objc = objc
-            if objc.light():
-                self.light = objc.light()
-            if objc.geometry():
-                self.geometry = objc.geometry()
-            if objc.camera():
-                self.camera = objc.camera()
+            if self._objc.light():
+                self._light = Light(objc=self._objc.light())
+            if self._objc.geometry():
+                self._geometry = Geometry(self._objc.geometry())
+            if self._objc.camera():
+                self._camera = Camera(self._objc.camera())
         else:
             self._objc = SCNNode.node()
         
@@ -363,13 +365,15 @@ class Node (object):
         The copy is recursive: every child node will be cloned, too.
         The copied nodes will share their attached objects (light, geometry, camera, ...) with the original instances
         '''
-        return Node(self._objc.clone())
+        clone = self._objc.clone()
+        return Node(clone)
     
     def flattenedClone(self):
         '''flattenedCLone
         A copy of the node with all geometry combined
         '''
-        return Node(self._objc.flattenedClone())
+        clone = self._objc.flattenedClone()
+        return Node(clone)
         
     def addChild(self, value):
         if isinstance(value, (ObjCInstance)):
@@ -383,14 +387,14 @@ class Node (object):
 
 
 class Light (object):
-    def __init__(self, kind = LightType.Omni, objc = None, casts_shadow = True, shadow_sample_count = 1000):
+    def __init__(self, kind = LightType.Omni, casts_shadow = True, shadow_sample_count = 1000, objc = None):
         if objc:
             self._objc = objc
         else:
             self._objc = SCNLight.light()
-        self.type = kind
-        self.castsShadow = casts_shadow
-        self.shadowSampleCount = shadow_sample_count
+            self.type = kind
+            self.castsShadow = casts_shadow
+            self.shadowSampleCount = shadow_sample_count
         
     @property
     def type(self):
@@ -434,7 +438,39 @@ class Light (object):
     @name.setter
     def name(self, value):
         self._objc.setName_(value)
+        
+    @property
+    def color(self):
+        return self._objc.color()
+        
+    @color.setter
+    def color(self, value):
+        self._objc.setColor_(value)
 
+    @property
+    def shadowColor(self):
+        return self._objc.color()
+        
+    @shadowColor.setter
+    def shadowColor(self, value):
+        self._objc.setShadowColor_(value)
+        
+    @property
+    def shadowRadius(self):
+        return self._objc.shadowRadius()
+    
+    @shadowRadius.setter
+    def shadowRadius(self, value):
+        self._objc.setShadowRadius(value)
+        
+    @property
+    def shadowMapSize(self):
+        return self._objc.shadowMapSize()
+    
+    @shadowMapSize.setter
+    def shadowMapSize(self, value):
+        self._objc.setShadowMapSize(value)
+    
 class Camera (object):
     def __init__(self, objc = None):
         if objc:
@@ -507,7 +543,9 @@ class Material (object):
             print('not a valid type')
         
 def load_scene(file):
-    pass
+    url = ns(file)
+    s = SCNScene.sceneWithURL_options_(url, ns({}))
+    return Scene(s)
                 
 if __name__ == '__main__':
     for i in UIApplication.sharedApplication().keyWindow().rootViewController().view().gestureRecognizers():
@@ -542,15 +580,14 @@ if __name__ == '__main__':
     n.geometry.material.lightingModel = LightingModel.PhysicallyBased
     v.scene.node.addChild(n)
     l = Node()
-    l.position = Vector3(0,100,0)
+    l.position = Vector3(25,25,20)
     l.rotation = Vector4(1,0,0,-pi/2)
     l.light = Light('spot')
     con=SCNLookAtConstraint.lookAtConstraintWithTarget_(n._objc)
     l._objc.setConstraints_([con])
-    cnode._objc.setConstraints_([con])
+    #cnode._objc.setConstraints_([con])
     v.scene.node.addChild(n)
     v.scene.node.addChild(l)
     v.scene._objc.background().setColor_(UIColor.colorWithName_('black'))
     v.show()
-    v.scene.node
-    
+    cl = l.clone()

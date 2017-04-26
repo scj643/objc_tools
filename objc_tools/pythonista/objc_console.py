@@ -9,7 +9,7 @@ console = UIApplication.sharedApplication().\
                         
 
 class history (object):
-    def __init__(self):
+    def __init__(self, objc):
         self._objc = console.history
         self._objc_set = console.setHistory_
         self._current_item = console.historyCurrentItem
@@ -25,3 +25,10 @@ class history (object):
     @property
     def current_item(self):
         return objc_to_py(self._current_item())
+        
+class Console (object):
+    def __init__(self, objc = UIApplication.sharedApplication().\
+                        keyWindow().rootViewController().\
+                        accessoryViewController().\
+                        consoleViewController()):
+        self.objc = objc

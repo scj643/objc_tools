@@ -19,6 +19,8 @@ class LightingModel (object):
     Lambert = 'SCNLightingModelLambert'
     Constant = 'SCNLightingModelConstant'
     PhysicallyBased = 'SCNLightingModelPhysicallyBased'
+    Blinn = 'SCNLightingModelBlinn'
+    
 
 class ShadowMode (IntEnum):
     '''See apple documentation'''

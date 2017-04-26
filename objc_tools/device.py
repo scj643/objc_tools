@@ -5,6 +5,7 @@ device = UIDevice.currentDevice()
 process = NSProcessInfo.processInfo()
 _fsizes = {'B': 1.0, 'KB': 1024.0, 'MB':  float(pow(1024,2)), 'GB': float(pow(1024,3))}
 
+
 def lowPowerModeStatus():
     return process.isLowPowerModeEnabled()
     
@@ -32,7 +33,7 @@ def deviceType():
     return str(device.model())
 
 
-#def deviceGeneration():
+# def deviceGeneration():
 #    return str(device._currentProduct())
 
     

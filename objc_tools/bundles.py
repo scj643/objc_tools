@@ -7,6 +7,7 @@ __doc__ = '''A tool for working with NSBundle'''
 FRAMEWORK_PATH = '/System/Library/Frameworks/'
 PRIVATE_FRAMEWORK_PATH = '/System/Library/PrivateFrameworks/'
 
+
 class BundleLoadState (object):
     def __init__(self, status, error):
         self.status = status
@@ -17,6 +18,7 @@ class BundleLoadState (object):
         
     def __repr__(self):
         return '<BundleLoadState: Loaded: {}, Error: {}>'.format(self.status, self.error)
+
 
 class Bundle (object):
     def __init__(self, bundle):
@@ -48,7 +50,7 @@ class Bundle (object):
         
     @property
     def extensionType(self):
-        return self.path.rsplit('.',1)[-1]
+        return self.path.rsplit('.', 1)[-1]
         
     def load(self):
         '''
@@ -120,7 +122,7 @@ def listPrivateFrameworks():
     returns = []
     for i in listdir(PRIVATE_FRAMEWORK_PATH):
         returns += [getBundleWithPath(PRIVATE_FRAMEWORK_PATH+i)]
-    return returns    
+    return returns
     
 
 def getBundleWithPath(path):
@@ -147,7 +149,7 @@ def bundleForClass(cls):
             return None
         
     try:
-        b=NSBundle.bundleForClass_(cls)
+        b = NSBundle.bundleForClass_(cls)
         return Bundle(b)
     except ValueError:
         return None
