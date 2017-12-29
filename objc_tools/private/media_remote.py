@@ -92,10 +92,8 @@ class Nowplaying (object):
             self.timestamp = datetime.now()
     
     @property
-    @property
     def nowplaying(self):
         if self._nowplaying.ptr:
-            global data
             b = nsdata_to_bytes(self._nowplaying.plistData())
             data = loads(b)
             # striping the prefix from items
