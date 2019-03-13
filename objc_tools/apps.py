@@ -4,6 +4,9 @@ from io import BytesIO
 from PIL import Image
 from objc_tools.objc_json import objc_to_py
 from objc_tools.backports.enum_backport import IntEnum
+import warnings
+
+warnings.warn("This API was broken in iOS 10 and greater", FutureWarning)
 
 LSApplicationWorkspace = ObjCClass('LSApplicationWorkspace')
 workspace = LSApplicationWorkspace.defaultWorkspace()
@@ -312,3 +315,4 @@ if __name__ == '__main__':
     a = allApps()
     p = getPythonista()[0]
     o = p.objc
+
