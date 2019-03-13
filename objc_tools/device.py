@@ -6,101 +6,101 @@ process = NSProcessInfo.processInfo()
 _fsizes = {'B': 1.0, 'KB': 1024.0, 'MB':  float(pow(1024,2)), 'GB': float(pow(1024,3))}
 
 
-def lowPowerModeStatus():
-    return process.isLowPowerModeEnabled()
+class Process (object):
+    def __init__(self):
+        self._objc = NSProcessInfo.processInfo()
+        self._fsizes = {'B': 1.0, 'KB': 1024.0, 'MB':  float(pow(1024,2)), 'GB': float(pow(1024,3))}
+    @property
+    def lowPowerModeStatus(self):
+        return self._objc.isLowPowerModeEnabled()
+        
+    @property
+    def hostName(self):
+        return str(self._objc.hostName())
+        
+    @property
+    def osVersion(self):
+        major = self._objc.operatingSystemVersion().a
+        minor = self._objc.operatingSystemVersion().b
+        patch = self._objc.operatingSystemVersion().c
+        return (major, minor, patch)
     
-
-def hostName():
-    return str(process.hostName())
+    @property
+    def osVersionString(self):
+        return str(self._objc.operatingSystemVersionString())
     
-
-def osVersion():
-    major = process.operatingSystemVersion().a
-    minor = process.operatingSystemVersion().b
-    patch = process.operatingSystemVersion().c
-    return (major, minor, patch)
-
-
-def osVersionString():
-    return str(process.operatingSystemVersionString())
-
-
-def deviceName():
-    return str(device.name())
-
-
-def deviceType():
-    return str(device.model())
-
-
-# def deviceGeneration():
-#    return str(device._currentProduct())
-
+    @property
+    def physicalMemory(self, unit='MB'):
+        if unit in self._fsizes:
+            divider = self._fsizes[unit]
+        else:
+            divider = self._fsizes['MB']
+        mem = int(self._objc.physicalMemory())
+        return mem/float(divider)
+        
+    @property
+    def processName(self):
+        return str(self._objc.processName())
+        
+    @processName.setter
+    def processName(self, value):
+        if type(value) == str:
+            self._objc.setProcessName_(value)
     
-def activeProcessors():
-    return process.activeProcessorCount()
-
-
-def physicalMemory(unit='MB'):
-    if unit in _fsizes:
-        divider = _fsizes[unit]
-    else:
-        divider = _fsizes['MB']
-    mem = int(process.physicalMemory())
-    return mem/float(divider)
-
-
-def processorCount():
-    return process.processorCount()
-
-
-def setProcessName(name):
-    if type(name) == str:
-        process.setProcessName_(name)
-        return True
-    else:
-        return False
-
-
-def processName():
-    return str(process.processName())
+    @property
+    def activeProcessors(self):
+        return self._objc.activeProcessorCount()
+        
+    @property
+    def pid(self):
+        return self._objc.processIdentifier()
+        
+    @property
+    def enviornment(self):
+        p = self._objc.environment()
+        keys = []
+        values = []
+        returns = {}
+        for i in p.allKeys():
+            keys += [str(i)]
+        for i in p.allValues():
+            values += [str(i)]
+        for i in zip(keys, values):
+            returns[i[0]] = i[1]
+        return returns
     
-
-def systemUptime():
-    '''
-    Returns system uptime in seconds
-    '''
-    return process.systemUptime()
-    
-    
-def enviornment():
-    p = process.environment()
-    keys = []
-    values = []
-    returns = {}
-    for i in p.allKeys():
-        keys += [str(i)]
-    for i in p.allValues():
-        values += [str(i)]
-    for i in zip(keys, values):
-        returns[i[0]] = i[1]
-    return returns
-    
-    
-def pid():
-    return process.processIdentifier()
+    @property
+    def systemUptime(self):
+        '''
+        Returns system uptime in seconds
+        '''
+        return self._objc.systemUptime()
 
 
-def supportsForceTouch():
-    '''Checks if force touch is supported
-    Private API may break
-    '''
-    return device._supportsForceTouch()
-    
+class Device (object):
+    def __init__(self):
+        self._objc = UIDevice.currentDevice()
+        
+    @property
+    def deviceName(self):
+        return str(device.name())
+        
+    @property
+    def deviceType(self):
+        return str(self._objc.model())
+        
+    @property
+    def supportsForceTouch(self):
+        '''Checks if force touch is supported
+        Private API may break
+        '''
+        return self._objc._supportsForceTouch()
+        
+    @property
+    def supportsDeepColor(self):
+        '''Checks if deep color is supported
+        This is currently only on the iPad Pro 9.7 inch
+        Private API may break
+        '''
+        return self._objc._supportsDeepColor()
 
-def supportsDeepColor():
-    '''Checks if deep color is supported
-    This is currently only on the iPad Pro 9.7 inch
-    Private API may break
-    '''
-    return device._supportsDeepColor()
