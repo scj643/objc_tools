@@ -49,9 +49,9 @@ class FileDesc (object):
         if type(url) == str:
             url = nsurl(url)
         if type(url) == ObjCInstance:
-            self.errorhandler = eHandler()
+            self.errorhandler = ObjcErrorHandler()
             self._objc = file_handler.initForReading_error_(url, None)
-            fformat = self.sf.fileFormat()
+            fformat = self._objc.fileFormat()
             self.sampleRate = fformat.sampleRate()
             self.channels = fformat.channelCount()
             self.format = urlparse(str(url)).path.split('.')[-1]

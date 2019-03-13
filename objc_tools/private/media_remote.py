@@ -1,4 +1,4 @@
-from objc_util import c_void_p, c_int, c, c_bool, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong, nsdata_to_bytes
+from objc_util import c_void_p, c_int, c, c_bool, NSString, ObjCBlock, c_char_p, ObjCClass, c_long, c_ulong, nsdata_to_bytes, ns
 from objc_tools.c.objc_handler import chandle
 from objc_tools.backports.enum_backport import IntEnum
 from objc_tools.c import dispatch
@@ -73,9 +73,10 @@ def route_has_volume_control():
     
 
 class Nowplaying (object):
-    def __init__(self):
+    def __init__(self, get_image=True):
         self._nowplaying = None
         self.timestamp = None
+        self._get_img = get_image
     
     def get(self, block = True, timeout=1):
         # handler = ObjCBlock(handle, argtypes=[c_void_p, c_void_p])
@@ -90,13 +91,17 @@ class Nowplaying (object):
         else:
             self._nowplaying = this.nowplaying
             self.timestamp = datetime.now()
+        if not self._get_img:
+            self._nowplaying.removeObjectForKey_('kMRMediaRemoteNowPlayingInfoArtworkData')
     
     @property
     def nowplaying(self):
         if self._nowplaying.ptr:
+            global data
             b = nsdata_to_bytes(self._nowplaying.plistData())
             data = loads(b)
             # striping the prefix from items
+            #print(data.keys())
             filtered = {}
             for i in data:
                 filtered[i.replace('kMRMediaRemoteNowPlayingInfo', '')] = data[i]
@@ -112,6 +117,9 @@ class Nowplaying (object):
         else:
             return None
             
+    @property
+    def album(self):
+        pass
 
 def bhandle(_cmd, d):
         global nowplaying
@@ -137,7 +145,9 @@ def set_route(route, pw):
 def play_pause():
     MRMediaRemoteSendCommand(Commands.TogglePlayPause, c_void_p())
 
-
+def skip():
+    MRMediaRemoteSendCommand(Commands.NextTrack, c_void_p())
+    
 if __name__ == '__main__':
     n = Nowplaying()
     n.get(True)
