@@ -8,7 +8,7 @@ def is_online():
     return bool(reachablity.reachabilityForInternetConnection().currentReachabilityStatus())
     
 
-def is_airplain_mode():
+def is_airplane_mode():
     return manager.sharedInstance().isAirplaneModeEnabled()
 
 
